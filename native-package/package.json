@@ -1,9 +1,6 @@
 {
-  "name": "stream-chat-react-native",
-  "version": "0.2.2",
-  "author": {
-    "company": "Stream.io Inc"
-  },
+  "name": "@carrybible/react-native-stream-chat",
+  "version": "0.2.5",
   "keywords": [
     "chat",
     "messaging",
@@ -52,7 +49,7 @@
   },
   "dependencies": {
     "es6-symbol": "^3.1.1",
-    "stream-chat-react-native-core": "v0.2.2"
+    "@carrybible/react-native-stream-chat-core": "^0.2.3"
   },
   "peerDependencies": {
     "@react-native-community/netinfo": ">=2.0.7",

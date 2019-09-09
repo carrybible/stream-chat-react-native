@@ -11,6 +11,8 @@ const InputBox = styled.TextInput`
 
 export class AutoCompleteInput extends React.PureComponent {
   static propTypes = {
+    placeholder: PropTypes.string,
+    placeholderTextColor: PropTypes.string,
     value: PropTypes.string,
     openSuggestions: PropTypes.func,
     closeSuggestions: PropTypes.func,
@@ -21,6 +23,7 @@ export class AutoCompleteInput extends React.PureComponent {
 
   static defaultProps = {
     value: '',
+    placeholder: 'Write your message',
   };
 
   constructor(props) {
@@ -245,7 +248,8 @@ export class AutoCompleteInput extends React.PureComponent {
     return (
       <InputBox
         ref={this.props.setInputBoxRef}
-        placeholder="Write your message"
+        placeholder={this.props.placeholder}
+        placeholderTextColor={this.props.placeholderTextColor}
         onChangeText={(text) => {
           this.handleChange(text);
         }}

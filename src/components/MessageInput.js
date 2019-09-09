@@ -150,6 +150,8 @@ const MessageInput = withKeyboardContext(
             closeSuggestions: PropTypes.func,
             /** @see See [suggestions context](https://getstream.github.io/stream-chat-react-native/#suggestionscontext) */
             updateSuggestions: PropTypes.func,
+            placeholder: PropTypes.string,
+            placeholderTextColor: PropTypes.string,
           };
 
           static defaultProps = {
@@ -769,6 +771,8 @@ const MessageInput = withKeyboardContext(
                         }}
                       />
                       <AutoCompleteInput
+                        placeholder={this.props.placeholder}
+                        placeholderTextColor={this.props.placeholderTextColor}
                         openSuggestions={this.props.openSuggestions}
                         closeSuggestions={this.props.closeSuggestions}
                         updateSuggestions={this.props.updateSuggestions}
