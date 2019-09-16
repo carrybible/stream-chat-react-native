@@ -8,6 +8,7 @@ import PropTypes from 'prop-types';
 import Immutable from 'seamless-immutable';
 import debounce from 'lodash/debounce';
 import throttle from 'lodash/throttle';
+import { emojiData } from '../utils';
 
 import { LoadingIndicator } from './LoadingIndicator';
 import { LoadingErrorIndicator } from './LoadingErrorIndicator';
@@ -114,6 +115,7 @@ export class ChannelInner extends PureComponent {
     LoadingIndicator,
     LoadingErrorIndicator,
     EmptyStateIndicator,
+    emojiData,
   };
 
   componentDidUpdate(prevProps) {
@@ -472,8 +474,19 @@ export class ChannelInner extends PureComponent {
     if (this.state.loadingMore) return;
     if (this._unmounted) return;
     this.setState({ loadingMore: true });
+    const oldestMessage = this.state.messages[0]
+      ? this.state.messages[0]
+      : null;
 
-    const oldestID = this.state.messages[0] ? this.state.messages[0].id : null;
+    if (oldestMessage.status !== 'received') {
+      this.setState({
+        loadingMore: false,
+      });
+
+      return;
+    }
+
+    const oldestID = oldestMessage ? oldestMessage.id : null;
     const perPage = 100;
     let queryResponse;
     try {
@@ -520,6 +533,7 @@ export class ChannelInner extends PureComponent {
     openThread: this.openThread,
     closeThread: this.closeThread,
     loadMoreThread: this.loadMoreThread,
+    emojiData: this.props.emojiData,
   });
 
   renderComponent = () => this.props.children;
