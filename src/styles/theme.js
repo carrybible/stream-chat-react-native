@@ -118,6 +118,9 @@ export const defaultTheme = {
       container: {},
       cover: {},
       footer: {},
+      title: {},
+      description: {},
+      url: {},
     },
 
     gallery: {

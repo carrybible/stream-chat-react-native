@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, Text, View, Linking } from 'react-native';
+import { Image, View, Linking } from 'react-native';
 import PropTypes from 'prop-types';
 import giphyLogo from '../assets/Poweredby_100px-White_VertText.png';
 import { themed } from '../styles/theme';
@@ -33,6 +33,24 @@ const Cover = styled.Image`
   display: flex;
   height: 150;
   ${({ theme }) => theme.message.card.cover.css}
+`;
+
+const Title = styled.Text`
+  font-weight: 700;
+  margin-bottom: 5;
+  ${({ theme }) => theme.message.card.title.css}
+`;
+
+const Description = styled.Text`
+  font-weight: 400;
+  margin-bottom: 5;
+  ${({ theme }) => theme.message.card.description.css}
+`;
+
+const URL = styled.Text`
+  font-weight: 400;
+  opacity: 80;
+  ${({ theme }) => theme.message.card.url.css}
 `;
 
 /**
@@ -119,9 +137,9 @@ export const Card = withMessageContentContext(
                   backgroundColor: 'transperant',
                 }}
               >
-                {title && <Text>{title}</Text>}
-                {text && <Text>{text}</Text>}
-                <Text>{this.trimUrl(title_link || og_scrape_url)}</Text>
+                {title && <Title>{title}</Title>}
+                {text && <Description>{text}</Description>}
+                <URL>{this.trimUrl(title_link || og_scrape_url)}</URL>
               </View>
               {type === 'giphy' && <Image source={giphyLogo} />}
             </Footer>
