@@ -703,19 +703,22 @@ const MessageInput = withKeyboardContext(
                       />
                     )}
                     <InputBoxContainer ref={this.props.setInputBoxContainerRef}>
-                      <AttachButton
-                        onPress={async () => {
-                          if (hasImagePicker && hasFilePicker) {
-                            await this.props.dismissKeyboard();
-                            this.attachActionSheet.show();
-                          } else if (hasImagePicker && !hasFilePicker)
-                            this._pickImage();
-                          else if (!hasImagePicker && hasFilePicker)
-                            this._pickFile();
-                        }}
-                      >
-                        <AttachButtonIcon source={iconAddAttachment} />
-                      </AttachButton>
+                      {(hasImagePicker || hasFilePicker) && (
+                        <AttachButton
+                          onPress={async () => {
+                            if (hasImagePicker && hasFilePicker) {
+                              await this.props.dismissKeyboard();
+                              this.attachActionSheet.show();
+                            } else if (hasImagePicker && !hasFilePicker)
+                              this._pickImage();
+                            else if (!hasImagePicker && hasFilePicker)
+                              this._pickFile();
+                          }}
+                        >
+                          <AttachButtonIcon source={iconAddAttachment} />
+                        </AttachButton>
+                      )}
+
                       {/**
                     TODO: Use custom action sheet to show icon with titles of button. But it doesn't
                     work well with async onPress operations. So find a solution.

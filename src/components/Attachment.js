@@ -81,6 +81,7 @@ export const Attachment = withMessageContentContext(
         groupStyle: PropTypes.oneOf(['single', 'top', 'middle', 'bottom']),
         /** Handler for long press event on attachment */
         onLongPress: PropTypes.func,
+        onPress: PropTypes.func,
       };
 
       constructor(props) {
@@ -142,7 +143,12 @@ export const Attachment = withMessageContentContext(
           if (a.actions && a.actions.length) {
             return (
               <View>
-                <Card {...a} alignment={this.props.alignment} />
+                <Card
+                  {...a}
+                  alignment={this.props.alignment}
+                  onPress={this.props.onPress}
+                  onLongPress={this.props.onLongPress}
+                />
                 {a.actions && a.actions.length > 0 && (
                   <AttachmentActions
                     key={'key-actions-' + a.id}
@@ -153,7 +159,14 @@ export const Attachment = withMessageContentContext(
               </View>
             );
           } else {
-            return <Card alignment={this.props.alignment} {...a} />;
+            return (
+              <Card
+                alignment={this.props.alignment}
+                {...a}
+                onPress={this.props.onPress}
+                onLongPress={this.props.onLongPress}
+              />
+            );
           }
         }
 
@@ -161,7 +174,8 @@ export const Attachment = withMessageContentContext(
           return (
             <TouchableOpacity
               onPress={() => {
-                this._goToURL(a.asset_url);
+                if (this.props.onPress) this.props.onPress(a);
+                else this._goToURL(a.asset_url);
               }}
               onLongPress={this.props.onLongPress}
             >
@@ -191,7 +205,11 @@ export const Attachment = withMessageContentContext(
         if (a.type === 'video' && a.asset_url && a.image_url) {
           return (
             // TODO: Put in video component
-            <Card alignment={this.props.alignment} {...a} />
+            <Card
+              alignment={this.props.alignment}
+              {...a}
+              onPress={this.props.onPress}
+            />
           );
         }
 

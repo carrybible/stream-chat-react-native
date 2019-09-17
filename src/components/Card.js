@@ -43,11 +43,11 @@ const Title = styled.Text`
 
 const Description = styled.Text`
   font-weight: 400;
-  margin-bottom: 5;
   ${({ theme }) => theme.message.card.description.css}
 `;
 
 const URL = styled.Text`
+  margin-top: 5;
   font-weight: 400;
   opacity: 80;
   ${({ theme }) => theme.message.card.url.css}
@@ -79,6 +79,7 @@ export const Card = withMessageContentContext(
         type: PropTypes.string,
         alignment: PropTypes.string,
         onLongPress: PropTypes.func,
+        onPress: PropTypes.func,
       };
 
       constructor(props) {
@@ -120,15 +121,22 @@ export const Card = withMessageContentContext(
         return (
           <Container
             onPress={() => {
-              this._goToURL(og_scrape_url || image_url || thumb_url);
+              const { alignment, onPress, ...others } = this.props;
+              if (this.props.onPress) this.props.onPress(others);
+              else this._goToURL(og_scrape_url || image_url || thumb_url);
             }}
             onLongPress={onLongPress}
             alignment={alignment}
+            style={{ marginTop: 2 }}
           >
-            <Cover
-              source={{ uri: makeImageCompatibleUrl(image_url || thumb_url) }}
-              resizMode="cover"
-            />
+            {(image_url || thumb_url) && (
+              <Cover
+                source={{
+                  uri: makeImageCompatibleUrl(image_url || thumb_url),
+                }}
+                resizMode="cover"
+              />
+            )}
             <Footer>
               <View
                 style={{
@@ -139,7 +147,9 @@ export const Card = withMessageContentContext(
               >
                 {title && <Title>{title}</Title>}
                 {text && <Description>{text}</Description>}
-                <URL>{this.trimUrl(title_link || og_scrape_url)}</URL>
+                {(title_link || og_scrape_url) && (
+                  <URL>{this.trimUrl(title_link || og_scrape_url)}</URL>
+                )}
               </View>
               {type === 'giphy' && <Image source={giphyLogo} />}
             </Footer>

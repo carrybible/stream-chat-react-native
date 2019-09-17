@@ -9,6 +9,8 @@ import isPlainObject from 'lodash/isPlainObject';
 export const BASE_FONT_SIZE = 16;
 
 export const Colors = {
+  left: '#EBEBEB',
+  right: '#EBEBEB',
   primary: '#006cff',
   secondary: '#111',
   danger: '#EDD8DD',
