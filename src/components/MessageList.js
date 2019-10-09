@@ -9,6 +9,7 @@ import { Message } from './Message';
 import { EventIndicator } from './EventIndicator';
 import { MessageNotification } from './MessageNotification';
 import { DateSeparator } from './DateSeparator';
+import { TypingIndicator } from './TypingIndicator';
 
 const ListContainer = styled.FlatList`
   flex: 1;
@@ -97,6 +98,16 @@ const MessageList = withChannelContext(
        * @see See loeadMoreThreshold [doc](https://facebook.github.io/react-native/docs/flatlist#onendreachedthreshold)
        * */
       loadMoreThreshold: PropTypes.number,
+      /**
+       * Callback for onPress event on Message component
+       *
+       * @param e       Event object for onPress event
+       * @param message Message object which was pressed
+       *
+       * */
+      onMessageTouch: PropTypes.func,
+      /** Should keyboard be dismissed when messaged is touched */
+      dismissKeyboardOnMessageTouch: PropTypes.bool,
       eventHistory: PropTypes.object,
       /** Helper function to mark current channel as read. */
       markRead: PropTypes.func,
@@ -117,7 +128,7 @@ const MessageList = withChannelContext(
       /**
        * A message object which is currently in edit state.
        */
-      editing: PropTypes.object,
+      editing: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
       loadMore: PropTypes.func,
       /**
        * Typing indicator UI component to render
@@ -186,6 +197,8 @@ const MessageList = withChannelContext(
       // https://github.com/facebook/react-native/blob/a7a7970e543959e9db5281914d5f132beb01db8d/Libraries/Lists/VirtualizedList.js#L466
       loadMoreThreshold: 2,
       messageGrouping: true,
+      dismissKeyboardOnMessageTouch: true,
+      TypingIndicator,
     };
 
     componentDidUpdate(prevProps) {
@@ -444,7 +457,10 @@ const MessageList = withChannelContext(
                 ? this.state.lastReceivedId
                 : null
             }
-            onMessageTouch={this.onMessageTouch}
+            onMessageTouch={this.props.onMessageTouch}
+            dismissKeyboardOnMessageTouch={
+              this.props.dismissKeyboardOnMessageTouch
+            }
             setEditingState={this.props.setEditingState}
             editing={this.props.editing}
             threadList={this.props.threadList}
@@ -462,8 +478,11 @@ const MessageList = withChannelContext(
     handleScroll = (event) => {
       const yOffset = event.nativeEvent.contentOffset.y;
       const removeNewMessageNotification = yOffset <= 0;
-
-      if (!this.props.threadList && removeNewMessageNotification)
+      if (
+        !this.props.threadList &&
+        removeNewMessageNotification &&
+        this.props.channel.countUnread() > 0
+      )
         this.props.markRead();
 
       this.setState((prevState) => ({

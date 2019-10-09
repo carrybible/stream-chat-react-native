@@ -44,8 +44,12 @@ export const MessageSimple = themed(
        * */
       onThreadSelect: PropTypes.func,
       /**
-       * Callback handler for onPress event on message component
-       */
+       * Callback for onPress event on Message component
+       *
+       * @param e       Event object for onPress event
+       * @param message Message object which was pressed
+       *
+       * */
       onMessageTouch: PropTypes.func,
       /**
        * Handler to delete a current message.
@@ -60,6 +64,8 @@ export const MessageSimple = themed(
       dismissKeyboard: PropTypes.func,
       /** Handler for actions. Actions in combination with attachments can be used to build [commands](https://getstream.io/chat/docs/#channel_commands). */
       handleAction: PropTypes.func,
+      /** Handler resend the message. */
+      handleRetry: PropTypes.func,
       /** Current [message object](https://getstream.io/chat/docs/#message_format) */
       message: PropTypes.object,
       /**

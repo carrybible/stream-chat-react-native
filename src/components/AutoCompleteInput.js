@@ -20,6 +20,12 @@ export class AutoCompleteInput extends React.PureComponent {
     getUsers: PropTypes.func,
     setInputBoxRef: PropTypes.func,
     textInputProps: PropTypes.object,
+    /**
+     * Additional props for underlying TextInput component. These props will be forwarded as it is to TextInput component.
+     *
+     * @see See https://facebook.github.io/react-native/docs/textinput#reference
+     */
+    additionalTextInputProps: PropTypes.object,
   };
 
   static defaultProps = {

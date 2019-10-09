@@ -1,6 +1,6 @@
 {
   "name": "@carrybible/react-native-stream-chat",
-  "version": "0.2.26",
+  "version": "0.3.0",
   "keywords": [
     "chat",
     "messaging",
@@ -9,9 +9,11 @@
   "main": "dist/index.js",
   "module": "dist/index.es.js",
   "jsnext:main": "dist/index.es.js",
+  "typings": "types/index.d.ts",
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "/types"
   ],
   "devDependencies": {
     "@babel/core": "^7.4.3",
@@ -49,7 +51,7 @@
   },
   "dependencies": {
     "es6-symbol": "^3.1.1",
-    "@carrybible/react-native-stream-chat-core": "^0.2.23"
+    "@carrybible/react-native-stream-chat-core": "^0.3.0"
   },
   "peerDependencies": {
     "@react-native-community/netinfo": ">=2.0.7",

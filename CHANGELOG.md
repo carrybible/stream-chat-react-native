@@ -1,5 +1,38 @@
 # Changelog
 
+## [0.3.4] 2019-10-03
+
+- Avoiding query channel api call when there are no more messages to render
+- Making mardRead api call only if unread count is > 0
+
+## [0.3.3] 2019-10-02
+
+- Making empty value of `typing` object - immutable
+- Adding support for `SendButton` UI component prop
+
+## [0.3.2] 2019-10-01
+
+- Fixing bug in themed HOC
+
+## [0.3.1] 2019-09-30
+
+- Adding typescript declaration file for expo and native package
+
+## [0.3.0] 2019-09-30
+
+- Adding typescript declaration file
+- Adding style customization support for actionsheet
+
+## [0.2.6] 2019-09-23
+
+- Fixing expo package for NetInfo changes
+
+## [0.2.5] 2019-09-23
+
+- Fixing deprecated warnings coming from NetInfo library
+- Adding onMessageTouch and dismissKeyboardOnMessageTouch prop for MessageList component
+- Fixing style issue (background color) of MessageText component, introduced in 0.2.4
+
 ## [0.2.4] 2019-09-13
 
 - Fixing bug in theme logic

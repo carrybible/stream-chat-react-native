@@ -14,3 +14,4 @@ export { ReactionPicker } from './ReactionPicker';
 export { ReactionPickerWrapper } from './ReactionPickerWrapper';
 export { Attachment } from './Attachment';
 export { AttachmentActions } from './AttachmentActions';
+export { SendButton } from './SendButton';

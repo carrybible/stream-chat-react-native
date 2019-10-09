@@ -17,12 +17,11 @@ import PropTypes from 'prop-types';
 import uniq from 'lodash/uniq';
 import styled from '@stream-io/styled-components';
 import { themed } from '../styles/theme';
+import { SendButton } from './SendButton';
 
 import { ActionSheetCustom as ActionSheet } from 'react-native-actionsheet';
 // import iconMedia from '../images/icons/icon_attach-media.png';
 
-import iconEdit from '../images/icons/icon_edit.png';
-import iconNewMessage from '../images/icons/icon_new_message.png';
 import iconAddAttachment from '../images/icons/plus-outline.png';
 import iconGallery from '../images/icons/icon_attach-media.png';
 import iconFolder from '../images/icons/icon_folder.png';
@@ -73,16 +72,35 @@ const AttachButtonIcon = styled.Image`
   ${({ theme }) => theme.messageInput.attachButtonIcon.css}
 `;
 
-const SendButton = styled.TouchableOpacity`
-  margin-left: 8;
-  ${({ theme }) => theme.messageInput.sendButton.css}
+const ActionSheetTitleContainer = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding-left: 20;
+  padding-right: 20;
+  ${({ theme }) => theme.messageInput.actionSheet.titleContainer.css};
 `;
 
-const SendButtonIcon = styled.Image`
-  width: 15;
-  height: 15;
-  ${({ theme }) => theme.messageInput.sendButtonIcon.css}
+const ActionSheetTitleText = styled.Text`
+  font-weight: bold;
+  ${({ theme }) => theme.messageInput.actionSheet.titleText.css};
 `;
+
+const ActionSheetButtonContainer = styled.View`
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  padding-left: 20;
+  ${({ theme }) => theme.messageInput.actionSheet.buttonContainer.css};
+`;
+
+const ActionSheetButtonText = styled.Text`
+  ${({ theme }) => theme.messageInput.actionSheet.buttonText.css};
+`;
+
 /**
  * UI Component for message input
  * Its a consumer of [Channel Context](https://getstream.github.io/stream-chat-react-native/#channelcontext)
@@ -107,14 +125,14 @@ const MessageInput = withKeyboardContext(
             /**
              * Override image upload request
              *
-             * @param
+             * @param file    File object - {uri: ''}
              * @param channel Current channel object
              * */
             doImageUploadRequest: PropTypes.func,
             /**
              * Override file upload request
              *
-             * @param
+             * @param file    File object - {uri: '', name: ''}
              * @param channel Current channel object
              * */
             doDocUploadRequest: PropTypes.func,
@@ -131,7 +149,7 @@ const MessageInput = withKeyboardContext(
             /** @see See [channel context](https://getstream.github.io/stream-chat-react-native/#channelcontext) */
             watchers: PropTypes.object,
             /** @see See [channel context](https://getstream.github.io/stream-chat-react-native/#channelcontext) */
-            editing: PropTypes.object,
+            editing: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
             /** @see See [channel context](https://getstream.github.io/stream-chat-react-native/#channelcontext) */
             clearEditingState: PropTypes.func,
             /** @see See [channel context](https://getstream.github.io/stream-chat-react-native/#channelcontext) */
@@ -142,7 +160,10 @@ const MessageInput = withKeyboardContext(
             parent: PropTypes.object,
             /** @see See [channel context](https://getstream.github.io/stream-chat-react-native/#channelcontext) */
             channel: PropTypes.object,
-            /** Ref callback to set reference on input box container */
+            /**
+             * Ref callback to set reference on input box container
+             * @see See [keyboard context](https://getstream.github.io/stream-chat-react-native/#keyboardcontext)
+             * */
             setInputBoxContainerRef: PropTypes.func,
             /** @see See [suggestions context](https://getstream.github.io/stream-chat-react-native/#suggestionscontext) */
             openSuggestions: PropTypes.func,
@@ -153,12 +174,25 @@ const MessageInput = withKeyboardContext(
             placeholder: PropTypes.string,
             placeholderTextColor: PropTypes.string,
             textInputProps: PropTypes.object,
+            /**
+             * Custom UI component for send button.
+             *
+             * Defaults to and accepts same props as: [SendButton](https://getstream.github.io/stream-chat-react-native/#sendbutton)
+             * */
+            SendButton: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+            /**
+             * Additional props for underlying TextInput component. These props will be forwarded as it is to TextInput component.
+             *
+             * @see See https://facebook.github.io/react-native/docs/textinput#reference
+             */
+            additionalTextInputProps: PropTypes.object,
           };
 
           static defaultProps = {
             hasImagePicker: true,
             hasFilePicker: true,
             textInputProps: {},
+            SendButton,
           };
 
           getMessageDetailsForState = (message) => {
@@ -646,8 +680,7 @@ const MessageInput = withKeyboardContext(
             this.attachActionSheet.hide();
           };
           render() {
-            const { hasImagePicker, hasFilePicker } = this.props;
-
+            const { hasImagePicker, hasFilePicker, SendButton } = this.props;
             let editingBoxStyles = {};
             if (this.props.editing) {
               editingBoxStyles = {
@@ -729,24 +762,15 @@ const MessageInput = withKeyboardContext(
                       <ActionSheet
                         ref={(o) => (this.attachActionSheet = o)}
                         title={
-                          <View
-                            style={{
-                              flexDirection: 'row',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                              width: '100%',
-                              paddingLeft: 20,
-                              paddingRight: 20,
-                            }}
-                          >
-                            <Text style={{ fontWeight: 'bold' }}>
+                          <ActionSheetTitleContainer>
+                            <ActionSheetTitleText>
                               Add a file
-                            </Text>
+                            </ActionSheetTitleText>
                             <IconSquare
                               icon={iconClose}
                               onPress={this.closeAttachActionSheet}
                             />
-                          </View>
+                          </ActionSheetTitleContainer>
                         }
                         options={[
                           /* eslint-disable */
@@ -795,14 +819,9 @@ const MessageInput = withKeyboardContext(
                       />
                       <SendButton
                         title="Pick an image from camera roll"
-                        onPress={this.sendMessage}
-                      >
-                        {this.props.editing ? (
-                          <SendButtonIcon source={iconEdit} />
-                        ) : (
-                          <SendButtonIcon source={iconNewMessage} />
-                        )}
-                      </SendButton>
+                        sendMessage={this.sendMessage}
+                        editing={this.props.editing}
+                      />
                     </InputBoxContainer>
                   </Container>
                 </View>
@@ -818,16 +837,8 @@ const MessageInput = withKeyboardContext(
 export { MessageInput };
 
 const AttachmentActionSheetItem = ({ icon, text }) => (
-  <View
-    style={{
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'flex-start',
-      width: '100%',
-      paddingLeft: 20,
-    }}
-  >
+  <ActionSheetButtonContainer>
     <IconSquare icon={icon} />
-    <Text style={{ marginLeft: 15 }}>{text}</Text>
-  </View>
+    <ActionSheetButtonText>{text}</ActionSheetButtonText>
+  </ActionSheetButtonContainer>
 );

@@ -152,6 +152,14 @@ export const defaultTheme = {
       reactionCount: {},
       text: {},
     },
+    actionSheet: {
+      titleContainer: {},
+      titleText: {},
+      buttonContainer: {},
+      buttonText: {},
+      cancelButtonContainer: {},
+      cancelButtonText: {},
+    },
   },
 
   messageInput: {
@@ -194,6 +202,12 @@ export const defaultTheme = {
         top: {},
         title: {},
       },
+    },
+    actionSheet: {
+      titleContainer: {},
+      titleText: {},
+      buttonContainer: {},
+      buttonText: {},
     },
   },
 
@@ -273,6 +287,7 @@ export const themed = (OriginalComponent) => {
               path.pop();
               return { css: v };
             }
+            path.pop();
             return v;
           };
 

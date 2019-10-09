@@ -36,7 +36,6 @@ export class ChannelInner extends PureComponent {
       watchers: Immutable({}),
       members: Immutable({}),
       read: Immutable({}),
-
       thread: props.thread,
       threadMessages: [],
       threadLoadingMore: false,
@@ -63,6 +62,11 @@ export class ChannelInner extends PureComponent {
 
     // hard limit to prevent you from scrolling faster than 1 page per 2 seconds
     this._loadMoreFinishedDebounced = debounce(this.loadMoreFinished, 2000, {
+      leading: true,
+      trailing: true,
+    });
+
+    this._loadMoreThrottled = throttle(this.loadMore, 2000, {
       leading: true,
       trailing: true,
     });
@@ -166,10 +170,10 @@ export class ChannelInner extends PureComponent {
       members: channel.state.members,
       watcher_count: channel.state.watcher_count,
       loading: false,
-      typing: {},
+      typing: Immutable({}),
     });
 
-    this.markRead();
+    if (channel.countUnread() > 0) this.markRead();
   }
 
   markRead = () => {
@@ -187,11 +191,7 @@ export class ChannelInner extends PureComponent {
     channel.on(this.handleEvent);
   }
 
-  openThread = (message, e) => {
-    if (e && e.preventDefault) {
-      e.preventDefault();
-    }
-
+  openThread = (message) => {
     const channel = this.props.channel;
     const threadMessages = channel.state.threads[message.id] || [];
 
@@ -235,11 +235,7 @@ export class ChannelInner extends PureComponent {
     });
   };
 
-  closeThread = (e) => {
-    if (e && e.preventDefault) {
-      e.preventDefault();
-    }
-
+  closeThread = () => {
     if (this._unmounted) return;
     this.setState({
       thread: null,
@@ -253,6 +249,7 @@ export class ChannelInner extends PureComponent {
       editing: message,
     });
   };
+
   updateMessage = (updatedMessage, extraState) => {
     const channel = this.props.channel;
 
@@ -471,7 +468,7 @@ export class ChannelInner extends PureComponent {
 
   loadMore = async () => {
     // prevent duplicate loading events...
-    if (this.state.loadingMore) return;
+    if (this.state.loadingMore || !this.state.hasMore) return;
     if (this._unmounted) return;
     this.setState({ loadingMore: true });
     const oldestMessage = this.state.messages[0]
@@ -527,8 +524,7 @@ export class ChannelInner extends PureComponent {
     clearEditingState: this.clearEditingState,
     EmptyStateIndicator: this.props.EmptyStateIndicator,
     markRead: this._markReadThrottled,
-
-    loadMore: this.loadMore,
+    loadMore: this._loadMoreThrottled,
     // thread related
     openThread: this.openThread,
     closeThread: this.closeThread,
