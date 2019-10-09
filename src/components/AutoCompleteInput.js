@@ -19,11 +19,13 @@ export class AutoCompleteInput extends React.PureComponent {
     triggerSettings: PropTypes.object,
     getUsers: PropTypes.func,
     setInputBoxRef: PropTypes.func,
+    textInputProps: PropTypes.object,
   };
 
   static defaultProps = {
     value: '',
     placeholder: 'Write your message',
+    textInputProps: {},
   };
 
   constructor(props) {
@@ -256,6 +258,7 @@ export class AutoCompleteInput extends React.PureComponent {
         value={this.state.text}
         onSelectionChange={this.handleSelectionChange}
         multiline
+        {...this.props.textInputProps}
       />
     );
   }

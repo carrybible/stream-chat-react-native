@@ -71,6 +71,9 @@ const Thread = withChannelContext(
          * **Available from [channel context](https://getstream.github.io/stream-chat-react-native/#channelcontext)**
          * If the thread is currently loading more messages. This is helpful to display a loading indicator on threadlist */
         threadLoadingMore: PropTypes.bool,
+
+        Attachment: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+        MessageInput: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
       };
 
       static defaultProps = {
@@ -117,6 +120,7 @@ class ThreadInner extends React.PureComponent {
   }
 
   render() {
+    const { MessageInput: MI } = this.props;
     if (!this.props.thread) {
       return null;
     }
@@ -149,9 +153,17 @@ class ThreadInner extends React.PureComponent {
           loadMore={this.props.loadMoreThread}
           hasMore={this.props.threadHasMore}
           loadingMore={this.props.threadLoadingMore}
+          Attachment={this.props.Attachment}
           Message={this.props.Message}
         />
-        <MessageInput parent={this.props.thread} focus={this.props.autoFocus} />
+        {MI ? (
+          <MI parent={this.props.thread} focus={this.props.autoFocus} />
+        ) : (
+          <MessageInput
+            parent={this.props.thread}
+            focus={this.props.autoFocus}
+          />
+        )}
       </React.Fragment>
     );
   }

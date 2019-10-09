@@ -152,11 +152,13 @@ const MessageInput = withKeyboardContext(
             updateSuggestions: PropTypes.func,
             placeholder: PropTypes.string,
             placeholderTextColor: PropTypes.string,
+            textInputProps: PropTypes.object,
           };
 
           static defaultProps = {
             hasImagePicker: true,
             hasFilePicker: true,
+            textInputProps: {},
           };
 
           getMessageDetailsForState = (message) => {
@@ -789,6 +791,7 @@ const MessageInput = withKeyboardContext(
                           commands: this.getCommands(),
                           onMentionSelectItem: this.onSelectItem,
                         })}
+                        textInputProps={this.props.textInputProps}
                       />
                       <SendButton
                         title="Pick an image from camera roll"
