@@ -46,6 +46,7 @@ const ChannelList = withChatContext(
       ]),
 
       List: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+      ListHeaderComponent: PropTypes.any,
       onSelect: PropTypes.func,
       /**
        * Function that overrides default behaviour when new message is received on channel that is not being watched
@@ -230,8 +231,7 @@ const ChannelList = withChatContext(
           };
         });
       } catch (e) {
-        console.warn(e);
-
+        console.warn('Error loading channels', e);
         if (this._unmounted) return;
         this.setState({ error: true, refreshing: false });
       }
@@ -259,6 +259,27 @@ const ChannelList = withChatContext(
 
       if (e.type === 'message.new') {
         this.moveChannelUp(e.cid);
+      }
+
+      // Detect if current user is added to channel but notification.added_to_channel is not detected
+      if (e.type === 'member.added') {
+        const channelIndex = this.state.channels.findIndex(
+          (channel) => channel.cid === e.cid,
+        );
+        if (this.props.client.user.id === e.user.id && channelIndex < 0) {
+          const c = e.cid.split(':');
+          const channel = await this.getChannel(c[0], c[1]);
+
+          if (this._unmounted) return;
+          this.setState((prevState) => ({
+            channels: uniqBy([channel, ...prevState.channels], 'cid'),
+            channelIds: uniqWith(
+              [channel.id, ...prevState.channelIds],
+              isEqual,
+            ),
+            offset: prevState.offset + 1,
+          }));
+        }
       }
 
       // make sure to re-render the channel list after connection is recovered
@@ -312,7 +333,10 @@ const ChannelList = withChatContext(
       }
 
       // remove from channel
-      if (e.type === 'notification.removed_from_channel') {
+      if (
+        e.type === 'notification.removed_from_channel' ||
+        e.type === 'channel.deleted'
+      ) {
         if (
           this.props.onRemovedFromChannel &&
           typeof this.props.onRemovedFromChannel === 'function'
@@ -341,10 +365,12 @@ const ChannelList = withChatContext(
         const channelIndex = channels.findIndex(
           (channel) => channel.cid === e.channel.cid,
         );
-        channels[channelIndex].data = Immutable(e.channel);
-        this.setState({
-          channels: [...channels],
-        });
+        if (channelIndex >= 0) {
+          channels[channelIndex].data = Immutable(e.channel);
+          this.setState({
+            channels: [...channels],
+          });
+        }
 
         if (
           this.props.onChannelUpdated &&
@@ -399,7 +425,15 @@ const ChannelList = withChatContext(
 
       return (
         <React.Fragment>
-          <List {...props} {...this.state} {...context} />
+          <List
+            {...props}
+            {...this.state}
+            {...context}
+            onReloadPress={() => {
+              this.setState({ error: false, refreshing: true });
+              this.queryChannels(true);
+            }}
+          />
         </React.Fragment>
       );
     }

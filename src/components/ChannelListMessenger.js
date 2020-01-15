@@ -40,6 +40,10 @@ const ChannelListMessenger = withChatContext(
         PropTypes.node,
         PropTypes.func,
       ]),
+      ListHeaderComponent: PropTypes.oneOfType([
+        PropTypes.node,
+        PropTypes.func,
+      ]),
       /** Loads next page of channels in channels object, which is present here as prop */
       loadNextPage: PropTypes.func,
       /**
@@ -51,6 +55,7 @@ const ChannelListMessenger = withChatContext(
       error: PropTypes.bool,
       /** If channels are being queries. LoadingIndicator will be displayed if true */
       loadingChannels: PropTypes.bool,
+      onReloadPress: PropTypes.func,
     };
 
     static defaultProps = {
@@ -69,7 +74,12 @@ const ChannelListMessenger = withChatContext(
 
     renderLoadingError = () => {
       const Indicator = this.props.LoadingErrorIndicator;
-      return <Indicator listType="channel" />;
+      return (
+        <Indicator
+          listType="channel"
+          onReloadPress={this.props.onReloadPress}
+        />
+      );
     };
 
     renderEmptyState = () => {
@@ -80,6 +90,7 @@ const ChannelListMessenger = withChatContext(
     renderChannels = () => (
       <FlatList
         data={this.props.channels}
+        ListHeaderComponent={this.props.ListHeaderComponent}
         onEndReached={this.props.loadNextPage}
         onEndReachedThreshold={this.props.loadMoreThreshold}
         ListEmptyComponent={this.renderEmptyState}

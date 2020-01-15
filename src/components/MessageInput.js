@@ -156,6 +156,7 @@ const MessageInput = withKeyboardContext(
             client: PropTypes.object,
             /** @see See [channel context](https://getstream.github.io/stream-chat-react-native/#channelcontext) */
             sendMessage: PropTypes.func,
+            onMessageSent: PropTypes.func,
             /** Parent message object - in case of thread */
             parent: PropTypes.object,
             /** @see See [channel context](https://getstream.github.io/stream-chat-react-native/#channelcontext) */
@@ -384,6 +385,7 @@ const MessageInput = withKeyboardContext(
                   fileOrder: Immutable([]),
                   mentioned_users: [],
                 });
+                if (this.props.onMessageSent) this.props.onMessageSent();
               } catch (err) {
                 console.log('Fialed');
               }
