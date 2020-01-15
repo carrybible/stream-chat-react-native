@@ -18,6 +18,7 @@ export const isPromise = (thing) => {
   return promise;
 };
 
+export const DEFAULT_QUERY_CHANNELS_LIMIT = 10;
 /**
  * ChannelList - A preview list of channels, allowing you to select the channel you want to open.
  * This components doesn't provide any UI for the list. UI is provided by component `List` which should be
@@ -30,23 +31,27 @@ const ChannelList = withChatContext(
   class ChannelList extends PureComponent {
     static propTypes = {
       /** The Preview to use, defaults to [ChannelPreviewMessenger](https://getstream.github.io/stream-chat-react-native/#channelpreviewmessenger) */
-      Preview: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+      Preview: PropTypes.oneOfType([PropTypes.node, PropTypes.elementType]),
 
       /** The loading indicator to use */
-      LoadingIndicator: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+      LoadingIndicator: PropTypes.oneOfType([
+        PropTypes.node,
+        PropTypes.elementType,
+      ]),
       /** The indicator to use when there is error in fetching channels */
       LoadingErrorIndicator: PropTypes.oneOfType([
         PropTypes.node,
-        PropTypes.func,
+        PropTypes.elementType,
       ]),
       /** The indicator to use when channel list is empty */
       EmptyStateIndicator: PropTypes.oneOfType([
         PropTypes.node,
-        PropTypes.func,
+        PropTypes.elementType,
       ]),
 
-      List: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+      List: PropTypes.oneOfType([PropTypes.node, PropTypes.elementType]),
       ListHeaderComponent: PropTypes.any,
+
       onSelect: PropTypes.func,
       /**
        * Function that overrides default behaviour when new message is received on channel that is not being watched
@@ -73,9 +78,23 @@ const ChannelList = withChatContext(
        * Function that overrides default behaviour when channel gets updated
        *
        * @param {Component} thisArg Reference to ChannelList component
-       * @param {Event} event       [Event object](https://getstream.io/chat/docs/#event_object) corresponding to `notification.channel_updated` event
+       * @param {Event} event       [Event object](https://getstream.io/chat/docs/#event_object) corresponding to `channel.updated` event
        * */
       onChannelUpdated: PropTypes.func,
+      /**
+       * Function to customize behaviour when channel gets truncated
+       *
+       * @param {Component} thisArg Reference to ChannelList component
+       * @param {Event} event       [Event object](https://getstream.io/chat/docs/#event_object) corresponding to `channel.truncated` event
+       * */
+      onChannelTruncated: PropTypes.func,
+      /**
+       * Function that overrides default behaviour when channel gets deleted. In absence of this prop, channel will be removed from the list.
+       *
+       * @param {Component} thisArg Reference to ChannelList component
+       * @param {Event} event       [Event object](https://getstream.io/chat/docs/#event_object) corresponding to `channel.deleted` event
+       * */
+      onChannelDeleted: PropTypes.func,
       /**
        * Object containing query filters
        * @see See [Channel query documentation](https://getstream.io/chat/docs/#query_channels) for a list of available fields for filter.
@@ -101,6 +120,25 @@ const ChannelList = withChatContext(
        * @param channel A Channel object
        */
       setActiveChannel: PropTypes.func,
+      /**
+       * If true, channels won't be dynamically sorted by most recent message.
+       */
+      lockChannelOrder: PropTypes.bool,
+      /**
+       * Besides existing (default) UX behaviour of underlying flatlist of ChannelList component, if you want
+       * to attach some additional props to un derlying flatlist, you can add it to following prop.
+       *
+       * You can find list of all the available FlatList props here - https://facebook.github.io/react-native/docs/flatlist#props
+       *
+       * e.g.
+       * ```
+       * <ChannelList
+       *  filters={filters}
+       *  sort={sort}
+       *  additionalFlatListProps={{ bounces: true }} />
+       * ```
+       */
+      additionalFlatListProps: PropTypes.object,
     };
 
     static defaultProps = {
@@ -109,12 +147,14 @@ const ChannelList = withChatContext(
       LoadingIndicator,
       LoadingErrorIndicator,
       EmptyStateIndicator,
-      hasNextPage: true,
       filters: {},
       options: {},
       sort: {},
       // https://github.com/facebook/react-native/blob/a7a7970e543959e9db5281914d5f132beb01db8d/Libraries/Lists/VirtualizedList.js#L466
       loadMoreThreshold: 2,
+      lockChannelOrder: false,
+      additionalFlatListProps: {},
+      logger: () => {},
     };
 
     constructor(props) {
@@ -124,6 +164,7 @@ const ChannelList = withChatContext(
         channels: Immutable([]),
         channelIds: Immutable([]),
         loadingChannels: true,
+        hasNextPage: true,
         refreshing: false,
         offset: 0,
       };
@@ -139,18 +180,55 @@ const ChannelList = withChatContext(
     }
 
     async componentDidMount() {
+      this.props.logger('ChannelList component', 'componentDidMount', {
+        tags: ['lifecycle', 'channellist'],
+        props: this.props,
+        state: this.state,
+      });
+
       await this._queryChannelsDebounced();
       this.listenToChanges();
     }
 
+    async componentDidUpdate(prevProps) {
+      // do we need deepequal?
+      if (
+        !isEqual(prevProps.filters, this.props.filters) ||
+        !isEqual(prevProps.sort, this.props.sort)
+      ) {
+        await this.setState({
+          error: false,
+          channels: Immutable([]),
+          channelIds: Immutable([]),
+          loadingChannels: true,
+          hasNextPage: true,
+          refreshing: false,
+          offset: 0,
+        });
+        await this.queryChannels();
+      }
+
+      this.props.logger('ChannelList component', 'componentDidUpdate', {
+        tags: ['lifecycle', 'channellist'],
+        props: this.props,
+        state: this.state,
+      });
+    }
+
     componentWillUnmount() {
+      this.props.logger('ChannelList component', 'componentWillUnmount', {
+        tags: ['lifecycle', 'channellist'],
+        props: this.props,
+        state: this.state,
+      });
+
       this._unmounted = true;
       this.props.client.off(this.handleEvent);
       this._queryChannelsDebounced.cancel();
     }
 
-    static getDerivedStateFromError() {
-      return { error: true };
+    static getDerivedStateFromError(error) {
+      return { error };
     }
 
     componentDidCatch(error, info) {
@@ -158,8 +236,8 @@ const ChannelList = withChatContext(
     }
 
     queryChannels = async (resync = false) => {
-      // Don't query again if query is already active.
-      if (this.queryActive) return;
+      // Don't query again if query is already active or there are no more results.
+      if (this.queryActive || !this.state.hasNextPage) return;
 
       this.queryActive = true;
 
@@ -183,6 +261,17 @@ const ChannelList = withChatContext(
 
       if (this._unmounted) return;
       this.setState({ refreshing: true });
+      this.props.logger('ChannelList component', 'queryChannels', {
+        tags: ['channellist'],
+        props: this.props,
+        state: this.state,
+        query: {
+          filters,
+          sort,
+          ...options,
+          offset,
+        },
+      });
 
       const channelPromise = this.props.client.queryChannels(filters, sort, {
         ...options,
@@ -226,14 +315,17 @@ const ChannelList = withChatContext(
             loadingChannels: false,
             offset: channels.length,
             hasNextPage:
-              channelQueryResponse.length >= options.limit ? true : false,
+              channelQueryResponse.length >=
+              (options.limit || DEFAULT_QUERY_CHANNELS_LIMIT)
+                ? true
+                : false,
             refreshing: false,
           };
         });
       } catch (e) {
         console.warn('Error loading channels', e);
         if (this._unmounted) return;
-        this.setState({ error: true, refreshing: false });
+        this.setState({ error: e, refreshing: false });
       }
       this.queryActive = false;
     };
@@ -258,7 +350,7 @@ const ChannelList = withChatContext(
       }
 
       if (e.type === 'message.new') {
-        this.moveChannelUp(e.cid);
+        !this.props.lockChannelOrder && this.moveChannelUp(e.cid);
       }
 
       // Detect if current user is added to channel but notification.added_to_channel is not detected
@@ -359,7 +451,7 @@ const ChannelList = withChatContext(
         }
       }
 
-      // // Channel data is updated
+      // Channel data is updated
       if (e.type === 'channel.updated') {
         const channels = this.state.channels;
         const channelIndex = channels.findIndex(
@@ -378,6 +470,39 @@ const ChannelList = withChatContext(
         )
           this.props.onChannelUpdated(this, e);
       }
+
+      // Channel is deleted
+      if (e.type === 'channel.deleted') {
+        if (
+          this.props.onChannelDeleted &&
+          typeof this.props.onChannelDeleted === 'function'
+        ) {
+          this.props.onChannelDeleted(this, e);
+        } else {
+          const channels = this.state.channels;
+          const channelIndex = channels.findIndex(
+            (channel) => channel.cid === e.channel.cid,
+          );
+          // Remove the deleted channel from the list.
+          channels.splice(channelIndex, 1);
+          this.setState({
+            channels: [...channels],
+          });
+        }
+      }
+
+      if (e.type === 'channel.truncated') {
+        this.setState((prevState) => ({
+          channels: [...prevState.channels],
+        }));
+
+        if (
+          this.props.onChannelTruncated &&
+          typeof this.props.onChannelTruncated === 'function'
+        )
+          this.props.onChannelTruncated(this, e);
+      }
+
       return null;
     };
 

@@ -1,25 +1,26 @@
 import React from 'react';
-import styled from '@stream-io/styled-components';
+import styled, { withTheme } from '@stream-io/styled-components';
 
 import { renderText, capitalize } from '../../utils';
+import PropTypes from 'prop-types';
 
 const TextContainer = styled.View`
   border-bottom-left-radius: ${({ theme, groupStyle }) =>
     groupStyle.indexOf('left') !== -1
-      ? theme.message.text.borderRadiusS
-      : theme.message.text.borderRadiusL};
+      ? theme.message.content.textContainer.borderRadiusS
+      : theme.message.content.textContainer.borderRadiusL};
   border-bottom-right-radius: ${({ theme, groupStyle }) =>
     groupStyle.indexOf('right') !== -1
-      ? theme.message.text.borderRadiusS
-      : theme.message.text.borderRadiusL};
+      ? theme.message.content.textContainer.borderRadiusS
+      : theme.message.content.textContainer.borderRadiusL};
   border-top-left-radius: ${({ theme, groupStyle }) =>
     groupStyle === 'leftBottom' || groupStyle === 'leftMiddle'
-      ? theme.message.text.borderRadiusS
-      : theme.message.text.borderRadiusL};
+      ? theme.message.content.textContainer.borderRadiusS
+      : theme.message.content.textContainer.borderRadiusL};
   border-top-right-radius: ${({ theme, groupStyle }) =>
     groupStyle === 'rightBottom' || groupStyle === 'rightMiddle'
-      ? theme.message.text.borderRadiusS
-      : theme.message.text.borderRadiusL};
+      ? theme.message.content.textContainer.borderRadiusS
+      : theme.message.content.textContainer.borderRadiusL};
   margin-top: 2;
   padding: 5px;
   padding-left: 8;
@@ -28,12 +29,12 @@ const TextContainer = styled.View`
     alignment === 'left' ? 'flex-start' : 'flex-end'};
   border-width: ${({ theme, alignment }) =>
     alignment === 'left'
-      ? theme.message.text.leftBorderWidth
-      : theme.message.text.rightBorderWidth};
+      ? theme.message.content.textContainer.leftBorderWidth
+      : theme.message.content.textContainer.rightBorderWidth};
   border-color: ${({ theme, alignment }) =>
     alignment === 'left'
-      ? theme.message.text.leftBorderColor
-      : theme.message.text.rightBorderColor};
+      ? theme.message.content.textContainer.leftBorderColor
+      : theme.message.content.textContainer.rightBorderColor};
   background-color: ${({ theme, alignment, type, status }) =>
     alignment === 'left' || type === 'error' || status === 'failed'
       ? theme.colors.left
@@ -41,7 +42,7 @@ const TextContainer = styled.View`
   ${({ theme }) => theme.message.text.css}
 `;
 
-export const MessageTextContainer = (props) => {
+export const MessageTextContainer = withTheme((props) => {
   const {
     message,
     groupStyles = ['bottom'],
@@ -56,7 +57,9 @@ export const MessageTextContainer = (props) => {
     capitalize(hasAttachment ? 'bottom' : groupStyles[0]);
 
   if (!message.text) return false;
-
+  const markdownStyles = props.theme
+    ? props.theme.message.content.markdown
+    : {};
   return (
     <React.Fragment>
       <TextContainer
@@ -66,11 +69,33 @@ export const MessageTextContainer = (props) => {
         type={message.type}
       >
         {!MessageText ? (
-          renderText(message)
+          renderText(message, markdownStyles)
         ) : (
           <MessageText {...props} renderText={renderText} />
         )}
       </TextContainer>
     </React.Fragment>
   );
+});
+
+MessageTextContainer.propTypes = {
+  /** Current [message object](https://getstream.io/chat/docs/#message_format) */
+  message: PropTypes.object,
+  /**
+   * Position of message in group - top, bottom, middle, single.
+   *
+   * Message group is a group of consecutive messages from same user. groupStyles can be used to style message as per their position in message group
+   * e.g., user avatar (to which message belongs to) is only showed for last (bottom) message in group.
+   */
+  groupStyles: PropTypes.array,
+  /**
+   * Returns true if message (param) belongs to current user, else false
+   *
+   * @param message
+   * */
+  isMyMessage: PropTypes.func,
+  /** Custom UI component for message text */
+  MessageText: PropTypes.oneOfType([PropTypes.node, PropTypes.elementType]),
+  /** Complete theme object. Its a [defaultTheme](https://github.com/GetStream/stream-chat-react-native/blob/master/src/styles/theme.js#L22) merged with customized theme provided as prop to Chat component */
+  theme: PropTypes.object,
 };

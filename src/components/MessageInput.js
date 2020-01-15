@@ -180,13 +180,29 @@ const MessageInput = withKeyboardContext(
              *
              * Defaults to and accepts same props as: [SendButton](https://getstream.github.io/stream-chat-react-native/#sendbutton)
              * */
-            SendButton: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+            SendButton: PropTypes.oneOfType([
+              PropTypes.node,
+              PropTypes.elementType,
+            ]),
             /**
              * Additional props for underlying TextInput component. These props will be forwarded as it is to TextInput component.
              *
              * @see See https://facebook.github.io/react-native/docs/textinput#reference
              */
             additionalTextInputProps: PropTypes.object,
+            /**
+             * Style object for actionsheet (used for option to choose file attachment or photo attachment).
+             * Supported styles: https://github.com/beefe/react-native-actionsheet/blob/master/lib/styles.js
+             */
+            actionSheetStyles: PropTypes.object,
+            /**
+             * Custom UI component for attachment icon for type 'file' attachment in preview.
+             * Defaults to and accepts same props as: https://github.com/GetStream/stream-chat-react-native/blob/master/src/components/FileIcon.js
+             */
+            AttachmentFileIcon: PropTypes.oneOfType([
+              PropTypes.node,
+              PropTypes.elementType,
+            ]),
           };
 
           static defaultProps = {
@@ -445,7 +461,7 @@ const MessageInput = withKeyboardContext(
               return;
 
             const result = await pickDocument();
-            if (result.type === 'cancel') {
+            if (result.type === 'cancel' || result.cancelled) {
               return;
             }
             const mimeType = lookup(result.name);
@@ -695,7 +711,6 @@ const MessageInput = withKeyboardContext(
                 backgroundColor: 'white',
               };
             }
-
             return (
               <React.Fragment>
                 <View style={editingBoxStyles}>
@@ -728,6 +743,7 @@ const MessageInput = withKeyboardContext(
                         fileUploads={this.state.fileOrder.map(
                           (id) => this.state.fileUploads[id],
                         )}
+                        AttachmentFileIcon={this.props.AttachmentFileIcon}
                       />
                     )}
                     {this.state.imageUploads && (
@@ -800,6 +816,7 @@ const MessageInput = withKeyboardContext(
                             }
                           }, 1);
                         }}
+                        styles={this.props.actionSheetStyles}
                       />
                       <AutoCompleteInput
                         placeholder={this.props.placeholder}
@@ -809,7 +826,6 @@ const MessageInput = withKeyboardContext(
                         updateSuggestions={this.props.updateSuggestions}
                         value={this.state.text}
                         onChange={this.onChange}
-                        getUsers={this.getUsers}
                         getCommands={this.getCommands}
                         setInputBoxRef={this.setInputBoxRef}
                         triggerSettings={ACITriggerSettings({

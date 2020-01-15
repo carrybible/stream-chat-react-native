@@ -60,7 +60,10 @@ export const defaultTheme = {
   message: {
     container: {},
     content: {
-      container: {},
+      container: {
+        borderRadiusL: 16,
+        borderRadiusS: 2,
+      },
       containerInner: {},
       metaContainer: {},
       metaText: {},
@@ -69,6 +72,16 @@ export const defaultTheme = {
       },
       deletedContainer: {},
       deletedText: {},
+      textContainer: {
+        borderRadiusL: 16,
+        borderRadiusS: 2,
+        leftBorderWidth: 0.5,
+        leftBorderColor: 'rgba(0,0,0,0.08)',
+        rightBorderWidth: 0,
+        rightBorderColor: 'transparent',
+      },
+      // Available options for styling text: https://github.com/CharlesMangwa/react-native-simple-markdown/tree/next#styles-1
+      markdown: {},
     },
     status: {
       spacer: {},
@@ -88,14 +101,6 @@ export const defaultTheme = {
       container: {},
       messageRepliesText: {},
       image: {},
-    },
-    text: {
-      borderRadiusL: 16,
-      borderRadiusS: 2,
-      leftBorderWidth: 0.5,
-      leftBorderColor: 'rgba(0,0,0,0.08)',
-      rightBorderWidth: 0,
-      rightBorderColor: 'transparent',
     },
     file: {
       container: {},
@@ -213,8 +218,10 @@ export const defaultTheme = {
 
   messageList: {
     listContainer: {},
-    messageNotification: {},
-    messageNotificationText: {},
+    messageNotification: {
+      container: {},
+      text: {},
+    },
     errorNotification: {},
     errorNotificationText: {},
     dateSeparator: {

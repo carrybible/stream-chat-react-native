@@ -14,12 +14,19 @@ export class AutoCompleteInput extends React.PureComponent {
     placeholder: PropTypes.string,
     placeholderTextColor: PropTypes.string,
     value: PropTypes.string,
+    /** @see See [suggestions context](https://getstream.github.io/stream-chat-react-native/#suggestionscontext) */
     openSuggestions: PropTypes.func,
+    /** @see See [suggestions context](https://getstream.github.io/stream-chat-react-native/#suggestionscontext) */
     closeSuggestions: PropTypes.func,
+    /** @see See [suggestions context](https://getstream.github.io/stream-chat-react-native/#suggestionscontext) */
+    updateSuggestions: PropTypes.func,
     triggerSettings: PropTypes.object,
-    getUsers: PropTypes.func,
     setInputBoxRef: PropTypes.func,
     textInputProps: PropTypes.object,
+    /**
+     * @param text string
+     */
+    onChange: PropTypes.func,
     /**
      * Additional props for underlying TextInput component. These props will be forwarded as it is to TextInput component.
      *
@@ -206,8 +213,8 @@ export class AutoCompleteInput extends React.PureComponent {
       if (
         currentTrigger &&
         text[tokenMatch.index - 1] &&
-        (triggers[currentTrigger].afterWhitespace &&
-          !text[tokenMatch.index - 1].match(/\s/))
+        triggers[currentTrigger].afterWhitespace &&
+        !text[tokenMatch.index - 1].match(/\s/)
       ) {
         // console.log('here 2');
         this.stopTracking();

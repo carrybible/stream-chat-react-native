@@ -53,6 +53,11 @@ const ImageContainer = styled.TouchableOpacity`
     length !== 3 ? theme.message.gallery.size : theme.message.gallery.halfSize};
   ${({ theme }) => theme.message.gallery.imageContainer.css}
 `;
+/**
+ * UI component for card in attachments.
+ *
+ * @example ./docs/Gallery.md
+ */
 
 export const Gallery = withMessageContentContext(
   themed(
@@ -66,6 +71,8 @@ export const Gallery = withMessageContentContext(
             thumb_url: PropTypes.string,
           }),
         ),
+        onLongPress: PropTypes.func,
+        alignment: PropTypes.string,
       };
 
       constructor(props) {
@@ -106,13 +113,19 @@ export const Gallery = withMessageContentContext(
               <Modal
                 visible={this.state.viewerModalOpen}
                 transparent={true}
-                onRequestClose={() => {}}
+                onRequestClose={() => {
+                  this.setState({ viewerModalOpen: false });
+                }}
               >
                 <SafeAreaView
                   style={{ flex: 1, backgroundColor: 'transparent' }}
                 >
                   <ImageViewer
                     imageUrls={images}
+                    // TODO: We don't have 'save image' functionality.
+                    // Until we do, lets disable this feature. saveToLocalByLongPress prop basically
+                    // opens up popup menu to with an option "Save to the album", which basically does nothing.
+                    saveToLocalByLongPress={false}
                     onCancel={() => {
                       this.setState({ viewerModalOpen: false });
                     }}
@@ -143,7 +156,6 @@ export const Gallery = withMessageContentContext(
                   length={images.length}
                   activeOpacity={0.8}
                   onPress={() => {
-                    console.log('open');
                     this.setState({ viewerModalOpen: true });
                   }}
                   onLongPress={this.props.onLongPress}
@@ -200,7 +212,9 @@ export const Gallery = withMessageContentContext(
               ))}
             </GalleryContainer>
             <Modal
-              onRequestClose={() => {}}
+              onRequestClose={() => {
+                this.setState({ viewerModalOpen: false });
+              }}
               visible={this.state.viewerModalOpen}
               transparent={true}
             >

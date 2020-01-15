@@ -32,7 +32,7 @@ export const MessageSimple = themed(
   class MessageSimple extends React.PureComponent {
     static propTypes = {
       /** Custom UI component for message text */
-      MessageText: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+      MessageText: PropTypes.oneOfType([PropTypes.node, PropTypes.elementType]),
       /** enabled reactions, this is usually set by the parent component based on channel configs */
       reactionsEnabled: PropTypes.bool.isRequired,
       /** enabled replies, this is usually set by the parent component based on channel configs */
@@ -49,8 +49,67 @@ export const MessageSimple = themed(
        * @param e       Event object for onPress event
        * @param message Message object which was pressed
        *
+       * @deprecated Use onPress instead
        * */
       onMessageTouch: PropTypes.func,
+      /**
+       * Function that overrides default behaviour when message is pressed/touched
+       * e.g. if you would like to open reaction picker on message press:
+       *
+       * ```
+       * import { MessageSimple } from 'stream-chat-react-native' // or 'stream-chat-expo'
+       * ...
+       * const MessageUIComponent = (props) => {
+       *  return (
+       *    <MessageSimple
+       *      {...props}
+       *      onPress={(thisArg, message, e) => {
+       *        thisArg.openReactionSelector();
+       *      }}
+       *  )
+       * }
+       * ```
+       *
+       * Similarly, you can also call other methods available on MessageContent
+       * component such as handleEdit, handleDelete, showActionSheet etc.
+       *
+       * Source - [MessageContent](https://github.com/GetStream/stream-chat-react-native/blob/master/src/components/MessageSimple/MessageContent.js)
+       *
+       * @param {Component} thisArg Reference to MessageContent component
+       * @param message Message object which was pressed
+       * @param e       Event object for onPress event
+       * */
+      onPress: PropTypes.func,
+      /**
+       * Function that overrides default behaviour when message is long pressed
+       * e.g. if you would like to open reaction picker on message long press:
+       *
+       * ```
+       * import { MessageSimple } from 'stream-chat-react-native' // or 'stream-chat-expo'
+       * ...
+       * const MessageUIComponent = (props) => {
+       *  return (
+       *    <MessageSimple
+       *      {...props}
+       *      onLongPress={(thisArg, message, e) => {
+       *        thisArg.openReactionSelector();
+       *      }}
+       *  )
+       * }
+       *
+       * Similarly, you can also call other methods available on MessageContent
+       * component such as handleEdit, handleDelete, showActionSheet etc.
+       *
+       * Source - [MessageContent](https://github.com/GetStream/stream-chat-react-native/blob/master/src/components/MessageSimple/MessageContent.js)
+       * ```
+       *
+       * By default we show action sheet with all the message actions on long press.
+       *
+       * @param {Component} thisArg Reference to MessageContent component
+       * @param message Message object which was long pressed
+       * @param e       Event object for onLongPress event
+       * */
+      onLongPress: PropTypes.func,
       /**
        * Handler to delete a current message.
        */
@@ -97,6 +156,19 @@ export const MessageSimple = themed(
       showMessageStatus: PropTypes.bool,
       /** Latest message id on current channel */
       lastReceivedId: PropTypes.string,
+      /**
+       * Style object for actionsheet (used to message actions).
+       * Supported styles: https://github.com/beefe/react-native-actionsheet/blob/master/lib/styles.js
+       */
+      actionSheetStyles: PropTypes.object,
+      /**
+       * Custom UI component for attachment icon for type 'file' attachment.
+       * Defaults to: https://github.com/GetStream/stream-chat-react-native/blob/master/src/components/FileIcon.js
+       */
+      AttachmentFileIcon: PropTypes.oneOfType([
+        PropTypes.node,
+        PropTypes.elementType,
+      ]),
     };
 
     static defaultProps = {

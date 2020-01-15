@@ -25,20 +25,24 @@ const ChannelListMessenger = withChatContext(
         }),
         PropTypes.object,
       ]).isRequired,
+      setActiveChannel: PropTypes.func,
       /** UI Component to display individual channel item in list.
        * Defaults to [ChannelPreviewMessenger](https://getstream.github.io/stream-chat-react-native/#channelpreviewmessenger) */
-      Preview: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+      Preview: PropTypes.oneOfType([PropTypes.node, PropTypes.elementType]),
       /** The loading indicator to use. Default: [LoadingIndicator](https://getstream.github.io/stream-chat-react-native/#loadingindicator) */
-      LoadingIndicator: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+      LoadingIndicator: PropTypes.oneOfType([
+        PropTypes.node,
+        PropTypes.elementType,
+      ]),
       /** The indicator to use when there is error in fetching channels. Default: [LoadingErrorIndicator](https://getstream.github.io/stream-chat-react-native/#loadingerrorindicator) */
       LoadingErrorIndicator: PropTypes.oneOfType([
         PropTypes.node,
-        PropTypes.func,
+        PropTypes.elementType,
       ]),
       /** The indicator to use when channel list is empty. Default: [EmptyStateIndicator](https://getstream.github.io/stream-chat-react-native/#emptystateindicator) */
       EmptyStateIndicator: PropTypes.oneOfType([
         PropTypes.node,
-        PropTypes.func,
+        PropTypes.elementType,
       ]),
       ListHeaderComponent: PropTypes.oneOfType([
         PropTypes.node,
@@ -52,10 +56,24 @@ const ChannelListMessenger = withChatContext(
        * */
       loadMoreThreshold: PropTypes.number,
       /** If there is error in querying channels */
-      error: PropTypes.bool,
+      error: PropTypes.oneOfType([PropTypes.bool, PropTypes.object]),
       /** If channels are being queries. LoadingIndicator will be displayed if true */
       loadingChannels: PropTypes.bool,
       onReloadPress: PropTypes.func,
+      /**
+       * Besides existing (default) UX behaviour of underlying flatlist of ChannelListMessenger component, if you want
+       * to attach some additional props to un derlying flatlist, you can add it to following prop.
+       *
+       * You can find list of all the available FlatList props here - https://facebook.github.io/react-native/docs/flatlist#props
+       *
+       * e.g.
+       * ```
+       * <ChannelListMessenger
+       *  channels={channels}
+       *  additionalFlatListProps={{ bounces: true }} />
+       * ```
+       */
+      additionalFlatListProps: PropTypes.object,
     };
 
     static defaultProps = {
@@ -65,6 +83,7 @@ const ChannelListMessenger = withChatContext(
       EmptyStateIndicator,
       // https://github.com/facebook/react-native/blob/a7a7970e543959e9db5281914d5f132beb01db8d/Libraries/Lists/VirtualizedList.js#L466
       loadMoreThreshold: 2,
+      additionalFlatListProps: {},
     };
 
     renderLoading = () => {
@@ -103,6 +122,7 @@ const ChannelListMessenger = withChatContext(
           />
         )}
         keyExtractor={(item) => item.cid}
+        {...this.props.additionalFlatListProps}
       />
     );
 

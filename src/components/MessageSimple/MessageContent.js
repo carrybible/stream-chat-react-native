@@ -33,14 +33,16 @@ const Container = styled.TouchableOpacity`
       : theme.colors.transparent};
   border-bottom-left-radius: ${({ alignment, theme }) =>
     alignment === 'left'
-      ? theme.message.text.borderRadiusS
-      : theme.message.text.borderRadiusL};
+      ? theme.message.content.container.borderRadiusS
+      : theme.message.content.container.borderRadiusL};
   border-bottom-right-radius: ${({ alignment, theme }) =>
     alignment === 'left'
-      ? theme.message.text.borderRadiusL
-      : theme.message.text.borderRadiusS};
-  border-top-left-radius: ${({ theme }) => theme.message.text.borderRadiusL};
-  border-top-right-radius: ${({ theme }) => theme.message.text.borderRadiusL};
+      ? theme.message.content.container.borderRadiusL
+      : theme.message.content.container.borderRadiusS};
+  border-top-left-radius: ${({ theme }) =>
+    theme.message.content.container.borderRadiusL};
+  border-top-right-radius: ${({ theme }) =>
+    theme.message.content.container.borderRadiusL};
   ${({ theme }) => theme.message.content.container.css};
 `;
 
@@ -102,6 +104,7 @@ const ActionSheetTitleText = styled.Text`
 
 const ActionSheetButtonContainer = styled.View`
   height: 50;
+  width: 100%;
   align-items: center;
   background-color: #fff;
   justify-content: center;
@@ -115,6 +118,10 @@ const ActionSheetButtonText = styled.Text`
 `;
 
 const ActionSheetCancelButtonContainer = styled.View`
+  height: 50;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
   ${({ theme }) => theme.message.actionSheet.cancelButtonContainer.css};
 `;
 const ActionSheetCancelButtonText = styled.Text`
@@ -129,7 +136,7 @@ export const MessageContent = themed(
 
     static propTypes = {
       /** @see See [channel context](#channelcontext) */
-      Attachment: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+      Attachment: PropTypes.oneOfType([PropTypes.node, PropTypes.elementType]),
       /** enabled reactions, this is usually set by the parent component based on channel configs */
       reactionsEnabled: PropTypes.bool.isRequired,
       /** enabled replies, this is usually set by the parent component based on channel configs */
@@ -146,8 +153,67 @@ export const MessageContent = themed(
        * @param e       Event object for onPress event
        * @param message Message object which was pressed
        *
+       * @deprecated Use onPress instead
        * */
       onMessageTouch: PropTypes.func,
+      /**
+       * Function that overrides default behaviour when message is pressed/touched
+       * e.g. if you would like to open reaction picker on message press:
+       *
+       * ```
+       * import { MessageSimple } from 'stream-chat-react-native' // or 'stream-chat-expo'
+       * ...
+       * const MessageUIComponent = (props) => {
+       *  return (
+       *    <MessageSimple
+       *      {...props}
+       *      onPress={(thisArg, message, e) => {
+       *        thisArg.openReactionSelector();
+       *      }}
+       *  )
+       * }
+       * ```
+       *
+       * Similarly, you can also call other methods available on MessageContent
+       * component such as handleEdit, handleDelete, showActionSheet etc.
+       *
+       * Source - [MessageContent](https://github.com/GetStream/stream-chat-react-native/blob/master/src/components/MessageSimple/MessageContent.js)
+       *
+       * @param {Component} thisArg Reference to MessageContent component
+       * @param message Message object which was pressed
+       * @param e       Event object for onPress event
+       * */
+      onPress: PropTypes.func,
+      /**
+       * Function that overrides default behaviour when message is long pressed
+       * e.g. if you would like to open reaction picker on message long press:
+       *
+       * ```
+       * import { MessageSimple } from 'stream-chat-react-native' // or 'stream-chat-expo'
+       * ...
+       * const MessageUIComponent = (props) => {
+       *  return (
+       *    <MessageSimple
+       *      {...props}
+       *      onLongPress={(thisArg, message, e) => {
+       *        thisArg.openReactionSelector();
+       *      }}
+       *  )
+       * }
+       *
+       * Similarly, you can also call other methods available on MessageContent
+       * component such as handleEdit, handleDelete, showActionSheet etc.
+       *
+       * Source - [MessageContent](https://github.com/GetStream/stream-chat-react-native/blob/master/src/components/MessageSimple/MessageContent.js)
+       *
+       * By default we show action sheet with all the message actions on long press.
+       * ```
+       *
+       * @param {Component} thisArg Reference to MessageContent component
+       * @param message Message object which was long pressed
+       * @param e       Event object for onLongPress event
+       * */
+      onLongPress: PropTypes.func,
       /**
        * Handler to delete a current message.
        */
@@ -163,6 +229,26 @@ export const MessageContent = themed(
       handleAction: PropTypes.func,
       /** Position of message. 'right' | 'left' */
       alignment: PropTypes.string,
+      /**
+       * Position of message in group - top, bottom, middle, single.
+       *
+       * Message group is a group of consecutive messages from same user. groupStyles can be used to style message as per their position in message group
+       * e.g., user avatar (to which message belongs to) is only showed for last (bottom) message in group.
+       */
+      groupStyles: PropTypes.array,
+      /**
+       * Style object for actionsheet (used to message actions).
+       * Supported styles: https://github.com/beefe/react-native-actionsheet/blob/master/lib/styles.js
+       */
+      actionSheetStyles: PropTypes.object,
+      /**
+       * Custom UI component for attachment icon for type 'file' attachment.
+       * Defaults to: https://github.com/GetStream/stream-chat-react-native/blob/master/src/components/FileIcon.js
+       */
+      AttachmentFileIcon: PropTypes.oneOfType([
+        PropTypes.node,
+        PropTypes.elementType,
+      ]),
     };
 
     static defaultProps = {
@@ -338,11 +424,18 @@ export const MessageContent = themed(
           </DeletedContainer>
         );
 
+      const onLongPress = this.props.onLongPress;
       const contentProps = {
         alignment: pos,
         status: message.status,
-        onPress: this.props.onMessageTouch,
-        onLongPress: options.length > 1 ? this.showActionSheet : null,
+        onPress: this.props.onPress
+          ? this.props.onPress.bind(this, this, message)
+          : this.props.onMessageTouch,
+        onLongPress: onLongPress
+          ? onLongPress.bind(this, this, message)
+          : options.length > 1
+          ? this.showActionSheet
+          : null,
         activeOpacity: 0.7,
         disabled: readOnly,
         hasReactions,
@@ -352,7 +445,7 @@ export const MessageContent = themed(
         contentProps.onPress = retrySendMessage.bind(this, Immutable(message));
 
       const context = {
-        onLongPress: options.length > 1 ? this.showActionSheet : null,
+        onLongPress: contentProps.onLongPress,
       };
 
       return (
@@ -410,6 +503,7 @@ export const MessageContent = themed(
                   files={files}
                   handleAction={this.props.handleAction}
                   alignment={this.props.alignment}
+                  AttachmentFileIcon={this.props.AttachmentFileIcon}
                 />
               )}
               {images && images.length > 0 && (
@@ -490,6 +584,7 @@ export const MessageContent = themed(
               cancelButtonIndex={0}
               destructiveButtonIndex={0}
               onPress={(index) => this.onActionPress(options[index].id)}
+              styles={this.props.actionSheetStyles}
             />
           </Container>
         </MessageContentContext.Provider>

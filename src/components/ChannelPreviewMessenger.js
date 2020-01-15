@@ -94,10 +94,14 @@ export const ChannelPreviewMessenger = themed(
 
     render() {
       const { channel } = this.props;
-      let name = channel.data.name;
       let otherMembers = [];
-      if (!name) {
-        const members = Object.values(channel.state.members);
+      let name = channel.data.name;
+      const isValidName = name && typeof name === 'string';
+
+      if (!isValidName) {
+        const members = channel.state
+          ? Object.values(channel.state.members)
+          : [];
         otherMembers = members.filter(
           (member) => member.user.id !== this.props.client.userID,
         );
@@ -116,7 +120,9 @@ export const ChannelPreviewMessenger = themed(
               </Title>
               <Date>{this.props.latestMessage.created_at}</Date>
             </DetailsTop>
-            <Message unread={this.props.unread > 0}>
+            <Message
+              unread={this.props.unread > 0 ? this.props.unread : undefined}
+            >
               {!this.props.latestMessage
                 ? 'Nothing yet...'
                 : truncate(

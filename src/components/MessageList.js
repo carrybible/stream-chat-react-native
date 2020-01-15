@@ -64,6 +64,7 @@ const MessageList = withChannelContext(
         newMessagesNotification: false,
         online: props.online,
       };
+      this.yOffset = 0;
     }
 
     static propTypes = {
@@ -81,9 +82,17 @@ const MessageList = withChannelContext(
       /** **Available from [chat context](https://getstream.github.io/stream-chat-react-native/#chatcontext)** */
       client: PropTypes.object,
       /** **Available from [channel context](https://getstream.github.io/stream-chat-react-native/#channelcontext)** */
-      Attachment: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+      Attachment: PropTypes.oneOfType([PropTypes.node, PropTypes.elementType]),
+      /**
+       * Custom UI component for attachment icon for type 'file' attachment.
+       * Defaults to: https://github.com/GetStream/stream-chat-react-native/blob/master/src/components/FileIcon.js
+       */
+      AttachmentFileIcon: PropTypes.oneOfType([
+        PropTypes.node,
+        PropTypes.elementType,
+      ]),
       /** **Available from [channel context](https://getstream.github.io/stream-chat-react-native/#channelcontext)** */
-      Message: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+      Message: PropTypes.oneOfType([PropTypes.node, PropTypes.elementType]),
       /** **Available from [channel context](https://getstream.github.io/stream-chat-react-native/#channelcontext)** */
       messages: PropTypes.array.isRequired,
       /** **Available from [channel context](https://getstream.github.io/stream-chat-react-native/#channelcontext)** */
@@ -135,20 +144,29 @@ const MessageList = withChannelContext(
        *
        * Defaults to and accepts same props as: [TypingIndicator](https://getstream.github.io/stream-chat-react-native/#typingindicator)
        * */
-      TypingIndicator: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+      TypingIndicator: PropTypes.oneOfType([
+        PropTypes.node,
+        PropTypes.elementType,
+      ]),
       /**
        * @deprecated User DateSeperator instead.
        * Date separator UI component to render
        *
        * Defaults to and accepts same props as: [DateSeparator](https://getstream.github.io/stream-chat-react-native/#dateseparator)
        * */
-      dateSeparator: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+      dateSeparator: PropTypes.oneOfType([
+        PropTypes.node,
+        PropTypes.elementType,
+      ]),
       /**
        * Date separator UI component to render
        *
        * Defaults to and accepts same props as: [DateSeparator](https://getstream.github.io/stream-chat-react-native/#dateseparator)
        * */
-      DateSeparator: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+      DateSeparator: PropTypes.oneOfType([
+        PropTypes.node,
+        PropTypes.elementType,
+      ]),
       /**
        * @deprecated User EventIndicator instead.
        *
@@ -159,7 +177,10 @@ const MessageList = withChannelContext(
        *
        * Defaults to and accepts same props as: [EventIndicator](https://getstream.github.io/stream-chat-react-native/#eventindicator)
        * */
-      eventIndicator: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+      eventIndicator: PropTypes.oneOfType([
+        PropTypes.node,
+        PropTypes.elementType,
+      ]),
       /**
        * UI Component to display following events in messagelist
        *
@@ -168,26 +189,53 @@ const MessageList = withChannelContext(
        *
        * Defaults to and accepts same props as: [EventIndicator](https://getstream.github.io/stream-chat-react-native/#eventindicator)
        * */
-      EventIndicator: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+      EventIndicator: PropTypes.oneOfType([
+        PropTypes.node,
+        PropTypes.elementType,
+      ]),
 
       /** UI component for empty message list */
       EmptyStateIndicator: PropTypes.oneOfType([
         PropTypes.node,
-        PropTypes.func,
+        PropTypes.elementType,
       ]),
       /**
        * @deprecated Use HeaderComponent instead.
        *
        * UI component for header of message list.
        */
-      headerComponent: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+      headerComponent: PropTypes.oneOfType([
+        PropTypes.node,
+        PropTypes.elementType,
+      ]),
       /**
        * UI component for header of message list. By default message list doesn't have any header.
        * This is basically a [ListFooterComponent](https://facebook.github.io/react-native/docs/flatlist#listheadercomponent) of FlatList
        * used in MessageList. Its footer instead of header, since message list is inverted.
        *
        */
-      HeaderComponent: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+      HeaderComponent: PropTypes.oneOfType([
+        PropTypes.node,
+        PropTypes.elementType,
+      ]),
+      /**
+       * Style object for actionsheet (used to message actions).
+       * Supported styles: https://github.com/beefe/react-native-actionsheet/blob/master/lib/styles.js
+       */
+      actionSheetStyles: PropTypes.object,
+      /**
+       * Besides existing (default) UX behaviour of underlying flatlist of MessageList component, if you want
+       * to attach some additional props to un derlying flatlist, you can add it to following prop.
+       *
+       * You can find list of all the available FlatList props here - https://facebook.github.io/react-native/docs/flatlist#props
+       *
+       * e.g.
+       * ```
+       * <MessageList
+       *  additionalFlatListProps={{ bounces: true, keyboardDismissMode: true }} />
+       * ```
+       */
+      additionalFlatListProps: PropTypes.object,
     };
 
     static defaultProps = {
@@ -197,6 +245,7 @@ const MessageList = withChannelContext(
       // https://github.com/facebook/react-native/blob/a7a7970e543959e9db5281914d5f132beb01db8d/Libraries/Lists/VirtualizedList.js#L466
       loadMoreThreshold: 2,
       messageGrouping: true,
+      additionalFlatListProps: {},
       dismissKeyboardOnMessageTouch: true,
       TypingIndicator,
     };
@@ -217,7 +266,7 @@ const MessageList = withChannelContext(
       }
 
       const hasNewMessage = currentLastMessage.id !== previousLastMessage.id;
-      const userScrolledUp = this.state.yOffset > 0;
+      const userScrolledUp = this.yOffset > 0;
       const isOwner = currentLastMessage.user.id === this.props.client.userID;
 
       let scrollToBottom = false;
@@ -252,6 +301,18 @@ const MessageList = withChannelContext(
 
     insertDates = (messages) => {
       const newMessages = [];
+      if (messages.length === 0) {
+        this.props.eventHistory &&
+          this.props.eventHistory.none &&
+          this.props.eventHistory.none.forEach((e) => {
+            newMessages.push({
+              type: 'channel.event',
+              event: e,
+            });
+          });
+
+        return newMessages;
+      }
 
       for (const [i, message] of messages.entries()) {
         if (message.type === 'message.read' || message.deleted_at) {
@@ -470,6 +531,8 @@ const MessageList = withChannelContext(
             retrySendMessage={this.props.retrySendMessage}
             openThread={this.props.openThread}
             emojiData={this.props.emojiData}
+            actionSheetStyles={this.props.actionSheetStyles}
+            AttachmentFileIcon={this.props.AttachmentFileIcon}
           />
         );
       }
@@ -485,8 +548,8 @@ const MessageList = withChannelContext(
       )
         this.props.markRead();
 
+      this.yOffset = yOffset;
       this.setState((prevState) => ({
-        yOffset,
         newMessagesNotification: removeNewMessageNotification
           ? false
           : prevState.newMessagesNotification,
@@ -499,11 +562,16 @@ const MessageList = withChannelContext(
     };
 
     render() {
+      const hasEventHistory =
+        this.props.eventHistory &&
+        Object.keys(this.props.eventHistory).length > 0;
+
       // We can't provide ListEmptyComponent to FlatList when inverted flag is set.
       // https://github.com/facebook/react-native/issues/21196
       if (
         this.props.messages &&
         this.props.messages.length === 0 &&
+        !hasEventHistory &&
         !this.props.threadList
       ) {
         return <View style={{ flex: 1 }}>{this.renderEmptyState()}</View>;
@@ -570,19 +638,20 @@ const MessageList = withChannelContext(
                 minIndexForVisible: 1,
                 autoscrollToTopThreshold: 10,
               }}
+              {...this.props.additionalFlatListProps}
             />
-            <TypingIndicatorContainer>
-              {this.props.TypingIndicator && showTypingIndicator && (
+            {this.props.TypingIndicator && showTypingIndicator && (
+              <TypingIndicatorContainer>
                 <TypingIndicator
                   typing={this.props.typing}
                   client={this.props.client}
                 />
-              )}
-            </TypingIndicatorContainer>
+              </TypingIndicatorContainer>
+            )}
             {this.state.newMessagesNotification && (
               <MessageNotification
                 showNotification={this.state.newMessagesNotification}
-                onClick={this.goToNewMessages}
+                onPress={this.goToNewMessages}
               />
             )}
             {!this.state.online && (

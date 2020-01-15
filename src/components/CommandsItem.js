@@ -1,6 +1,8 @@
 import React from 'react';
 import { Text } from 'react-native';
 import styled from '@stream-io/styled-components';
+import PropTypes from 'prop-types';
+import { themed } from '../styles/theme';
 
 const Container = styled.View`
   flex-direction: column;
@@ -19,20 +21,33 @@ const Title = styled.Text`
   ${({ theme }) => theme.messageInput.suggestions.command.title.css}
 `;
 
-export class CommandsItem extends React.Component {
-  render() {
-    const {
-      item: { name, args, description },
-    } = this.props;
+/**
+ * @example ./docs/CommandsItem.md
+ * @extends PureComponent
+ */
+export const CommandsItem = themed(
+  class CommandsItem extends React.Component {
+    static themePath = 'messageInput.suggestions.command';
+    static propTypes = {
+      name: PropTypes.string,
+      args: PropTypes.string,
+      description: PropTypes.string,
+    };
 
-    return (
-      <Container>
-        <Top>
-          <Title>/{name} </Title>
-          <Text>{args}</Text>
-        </Top>
-        <Text>{description}</Text>
-      </Container>
-    );
-  }
-}
+    render() {
+      const {
+        item: { name, args, description },
+      } = this.props;
+
+      return (
+        <Container>
+          <Top>
+            <Title>/{name} </Title>
+            <Text>{args}</Text>
+          </Top>
+          <Text>{description}</Text>
+        </Container>
+      );
+    }
+  },
+);

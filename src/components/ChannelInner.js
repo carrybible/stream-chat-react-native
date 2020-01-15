@@ -92,6 +92,11 @@ export class ChannelInner extends PureComponent {
     });
 
     this.messageInputBox = false;
+
+    this.props.logger('Channel component', 'Constructor', {
+      props: this.props,
+      state: this.state,
+    });
   }
 
   static propTypes = {
@@ -102,17 +107,23 @@ export class ChannelInner extends PureComponent {
     /** Client is passed via the Chat Context */
     client: PropTypes.object.isRequired,
     /** The loading indicator to use */
-    LoadingIndicator: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+    LoadingIndicator: PropTypes.oneOfType([
+      PropTypes.node,
+      PropTypes.elementType,
+    ]),
     /** The indicator to use when there is error  */
     LoadingErrorIndicator: PropTypes.oneOfType([
       PropTypes.node,
-      PropTypes.func,
+      PropTypes.elementType,
     ]),
     /** The indicator to use when message list is empty */
-    EmptyStateIndicator: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+    EmptyStateIndicator: PropTypes.oneOfType([
+      PropTypes.node,
+      PropTypes.elementType,
+    ]),
     isOnline: PropTypes.bool,
-    Message: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
-    Attachment: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+    Message: PropTypes.oneOfType([PropTypes.node, PropTypes.elementType]),
+    Attachment: PropTypes.oneOfType([PropTypes.node, PropTypes.elementType]),
   };
 
   static defaultProps = {
@@ -120,9 +131,16 @@ export class ChannelInner extends PureComponent {
     LoadingErrorIndicator,
     EmptyStateIndicator,
     emojiData,
+    logger: () => {},
   };
 
   componentDidUpdate(prevProps) {
+    this.props.logger('Channel component', 'componentDidUpdate', {
+      tags: ['lifecycle', 'channel'],
+      props: this.props,
+      state: this.state,
+    });
+
     if (this.props.isOnline !== prevProps.isOnline) {
       if (this._unmounted) return;
       this.setState({ online: this.props.isOnline });
@@ -130,6 +148,12 @@ export class ChannelInner extends PureComponent {
   }
 
   async componentDidMount() {
+    this.props.logger('Channel component', 'componentDidMount', {
+      tags: ['lifecycle', 'channel'],
+      props: this.props,
+      state: this.state,
+    });
+
     const channel = this.props.channel;
     let errored = false;
     if (!channel.initialized) {
@@ -137,7 +161,7 @@ export class ChannelInner extends PureComponent {
         await channel.watch();
       } catch (e) {
         if (this._unmounted) return;
-        this.setState({ error: true });
+        this.setState({ error: e });
         errored = true;
       }
     }
@@ -150,6 +174,12 @@ export class ChannelInner extends PureComponent {
   }
 
   componentWillUnmount() {
+    this.props.logger('Channel component', 'componentWillUnmount', {
+      tags: ['lifecycle', 'channel'],
+      props: this.props,
+      state: this.state,
+    });
+
     this.props.channel.off(this.handleEvent);
     this.props.client.off('connection.recovered', this.handleEvent);
 
@@ -445,7 +475,9 @@ export class ChannelInner extends PureComponent {
   addToEventHistory = (e) => {
     this.setState((prevState) => {
       const lastMessageId =
-        prevState.messages[prevState.messages.length - 1].id;
+        prevState.messages.length > 0
+          ? prevState.messages[prevState.messages.length - 1].id
+          : 'none';
 
       if (!prevState.eventHistory[lastMessageId])
         return {
@@ -471,11 +503,20 @@ export class ChannelInner extends PureComponent {
     if (this.state.loadingMore || !this.state.hasMore) return;
     if (this._unmounted) return;
     this.setState({ loadingMore: true });
+
+    if (!this.state.messages.length === 0) {
+      this.setState({
+        loadingMore: false,
+      });
+
+      return;
+    }
+
     const oldestMessage = this.state.messages[0]
       ? this.state.messages[0]
       : null;
 
-    if (oldestMessage.status !== 'received') {
+    if (oldestMessage && oldestMessage.status !== 'received') {
       this.setState({
         loadingMore: false,
       });
@@ -486,6 +527,12 @@ export class ChannelInner extends PureComponent {
     const oldestID = oldestMessage ? oldestMessage.id : null;
     const perPage = 100;
     let queryResponse;
+    this.props.logger('Channel Component', 'Requerying the messages', {
+      props: this.props,
+      state: this.state,
+      limit: perPage,
+      id_lt: oldestID,
+    });
     try {
       queryResponse = await this.props.channel.query({
         messages: { limit: perPage, id_lt: oldestID },
@@ -541,13 +588,24 @@ export class ChannelInner extends PureComponent {
 
   renderLoadingError = () => {
     const Indicator = this.props.LoadingErrorIndicator;
-    return <Indicator listType="message" />;
+    return <Indicator error={this.state.error} listType="message" />;
   };
 
   render() {
     let core;
 
     if (this.state.error) {
+      this.props.logger(
+        'Channel component',
+        'Error loading channel - rendering error indicator',
+        {
+          tags: ['error', 'channelComponent'],
+          props: this.props,
+          state: this.state,
+          error: this.state.error,
+        },
+      );
+
       core = this.renderLoadingError();
     } else if (this.state.loading) {
       core = this.renderLoading();
