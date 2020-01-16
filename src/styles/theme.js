@@ -58,6 +58,7 @@ export const defaultTheme = {
   },
 
   message: {
+    text: { css: {} },
     container: {},
     content: {
       container: {

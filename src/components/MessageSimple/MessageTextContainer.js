@@ -39,7 +39,7 @@ const TextContainer = styled.View`
     alignment === 'left' || type === 'error' || status === 'failed'
       ? theme.colors.left
       : theme.colors.right};
-  ${({ theme }) => theme.message.text.css}
+  ${({ theme }) => theme.message.content.textContainer.css}
 `;
 
 export const MessageTextContainer = withTheme((props) => {
