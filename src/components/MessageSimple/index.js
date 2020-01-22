@@ -30,6 +30,11 @@ const Container = styled.View`
 
 export const MessageSimple = themed(
   class MessageSimple extends React.PureComponent {
+    constructor(props) {
+      super(props);
+      this.messageContentRef = React.createRef();
+    }
+
     static propTypes = {
       /** Custom UI component for message text */
       MessageText: PropTypes.oneOfType([PropTypes.node, PropTypes.elementType]),
@@ -180,6 +185,14 @@ export const MessageSimple = themed(
 
     static themePath = 'message';
 
+    openReactionSelector = () => {
+      this.messageContentRef.current.openReactionSelector();
+    };
+
+    openThread = () => {
+      this.messageContentRef.current.openThread();
+    };
+
     render() {
       const {
         message,
@@ -217,14 +230,22 @@ export const MessageSimple = themed(
         >
           {pos === 'right' ? (
             <React.Fragment>
-              <MessageContent {...this.props} alignment={pos} />
+              <MessageContent
+                {...this.props}
+                alignment={pos}
+                ref={this.messageContentRef}
+              />
               <MessageAvatar {...this.props} />
               {showMessageStatus && <MessageStatus {...this.props} />}
             </React.Fragment>
           ) : (
             <React.Fragment>
               <MessageAvatar {...this.props} />
-              <MessageContent {...this.props} alignment={pos} />
+              <MessageContent
+                {...this.props}
+                alignment={pos}
+                ref={this.messageContentRef}
+              />
             </React.Fragment>
           )}
         </Container>

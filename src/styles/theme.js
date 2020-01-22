@@ -267,68 +267,79 @@ export const themed = (OriginalComponent) => {
   if (OriginalComponent.themePath == null) {
     throw Error('Only use themed on components that have a static themePath');
   }
-  const ThemedComponent = ({ style, ...props }) => (
-    <ThemeConsumer>
-      {(themeProviderTheme) => {
-        if (!style && themeProviderTheme) {
-          return <OriginalComponent {...props} />;
-        }
-        let modifiedTheme = themeProviderTheme || defaultTheme;
-        if (style) {
-          const themeDiff = {};
-          const path = [];
+  class ThemedComponent extends React.Component {
+    static themePath = OriginalComponent.themePath;
+    static extraThemePaths = OriginalComponent.extraThemePaths;
+    static displayName = `Themed${getDisplayName(OriginalComponent)}`;
 
-          // replaces
-          // { 'avatar.fallback': 'background-color: red;' }
-          // with
-          // { 'avatar.fallback': { css: 'background-color: red;' } }
-          const replaceCssShorthand = (v) => {
-            if (isPlainObject(v)) {
-              const m = mapValues(v, (v, k) => {
-                path.push(k);
-                return replaceCssShorthand(v);
-              });
-              path.pop();
-              return m;
-            }
-            if (isPlainObject(lodashGet(defaultTheme, path.join('.')))) {
-              path.pop();
-              return { css: v };
-            }
-            path.pop();
-            return v;
-          };
+    render() {
+      // console.log(`Themed${getDisplayName(OriginalComponent)}`, this.props);
+      const { style, forwardedRef, ...props } = this.props;
 
-          style = replaceCssShorthand(style);
-          for (const k in style) {
-            if (
-              lodashGet(defaultTheme, OriginalComponent.themePath + '.' + k)
-            ) {
-              merge(
-                themeDiff,
-                lodashSet({}, OriginalComponent.themePath + '.' + k, style[k]),
-              );
-            } else if (lodashGet(defaultTheme, k)) {
-              merge(themeDiff, lodashSet({}, k, style[k]));
-            } else {
-              throw Error(`Unknown theme key ${k}`);
+      return (
+        <ThemeConsumer>
+          {(themeProviderTheme) => {
+            if (!style && themeProviderTheme) {
+              return <OriginalComponent {...props} ref={forwardedRef} />;
             }
-          }
+            let modifiedTheme = themeProviderTheme || defaultTheme;
+            if (style) {
+              const themeDiff = {};
+              const path = [];
 
-          modifiedTheme = merge({}, modifiedTheme, themeDiff);
-        }
-        return (
-          <ThemeProvider theme={modifiedTheme}>
-            <OriginalComponent {...props} />
-          </ThemeProvider>
-        );
-      }}
-    </ThemeConsumer>
-  );
-  ThemedComponent.themePath = OriginalComponent.themePath;
-  ThemedComponent.extraThemePaths = OriginalComponent.extraThemePaths;
-  ThemedComponent.displayName = `Themed${getDisplayName(OriginalComponent)}`;
-  return ThemedComponent;
+              // replaces
+              // { 'avatar.fallback': 'background-color: red;' }
+              // with
+              // { 'avatar.fallback': { css: 'background-color: red;' } }
+              const replaceCssShorthand = (v) => {
+                if (isPlainObject(v)) {
+                  const m = mapValues(v, (v, k) => {
+                    path.push(k);
+                    return replaceCssShorthand(v);
+                  });
+                  path.pop();
+                  return m;
+                }
+                if (isPlainObject(lodashGet(defaultTheme, path.join('.')))) {
+                  path.pop();
+                  return { css: v };
+                }
+                path.pop();
+                return v;
+              };
+
+              const s = replaceCssShorthand(style);
+              for (const k in s) {
+                if (
+                  lodashGet(defaultTheme, OriginalComponent.themePath + '.' + k)
+                ) {
+                  merge(
+                    themeDiff,
+                    lodashSet({}, OriginalComponent.themePath + '.' + k, s[k]),
+                  );
+                } else if (lodashGet(defaultTheme, k)) {
+                  merge(themeDiff, lodashSet({}, k, s[k]));
+                } else {
+                  throw Error(`Unknown theme key ${k}`);
+                }
+              }
+
+              modifiedTheme = merge({}, modifiedTheme, themeDiff);
+            }
+            return (
+              <ThemeProvider theme={modifiedTheme}>
+                <OriginalComponent {...props} ref={forwardedRef} />
+              </ThemeProvider>
+            );
+          }}
+        </ThemeConsumer>
+      );
+    }
+  }
+
+  return React.forwardRef((props, ref) => (
+    <ThemedComponent {...props} forwardedRef={ref} />
+  ));
 };
 
 // Copied from here:

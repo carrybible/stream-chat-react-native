@@ -22,7 +22,8 @@ import { SendButton } from './SendButton';
 import { ActionSheetCustom as ActionSheet } from 'react-native-actionsheet';
 // import iconMedia from '../images/icons/icon_attach-media.png';
 
-import iconAddAttachment from '../images/icons/plus-outline.png';
+import iconImageAttachment from '../images/icons/icons8-image.png';
+import iconFileAttachment from '../images/icons/icons8-attach.png';
 import iconGallery from '../images/icons/icon_attach-media.png';
 import iconFolder from '../images/icons/icon_folder.png';
 import iconClose from '../images/icons/icon_close.png';
@@ -757,19 +758,24 @@ const MessageInput = withKeyboardContext(
                     )}
                     <InputBoxContainer ref={this.props.setInputBoxContainerRef}>
                       {(hasImagePicker || hasFilePicker) && (
-                        <AttachButton
-                          onPress={async () => {
-                            if (hasImagePicker && hasFilePicker) {
-                              await this.props.dismissKeyboard();
-                              this.attachActionSheet.show();
-                            } else if (hasImagePicker && !hasFilePicker)
-                              this._pickImage();
-                            else if (!hasImagePicker && hasFilePicker)
-                              this._pickFile();
-                          }}
-                        >
-                          <AttachButtonIcon source={iconAddAttachment} />
-                        </AttachButton>
+                        <View style={{ flexDirection: 'row' }}>
+                          {this.props.hasImagePicker && (
+                            <AttachButton onPress={() => this._pickImage()}>
+                              {this.props.IconImageAttachment || (
+                                <AttachButtonIcon
+                                  source={iconImageAttachment}
+                                />
+                              )}
+                            </AttachButton>
+                          )}
+                          {this.props.hasFilePicker && (
+                            <AttachButton onPress={() => this._pickFile()}>
+                              {this.props.IconFileAttachment || (
+                                <AttachButtonIcon source={iconFileAttachment} />
+                              )}
+                            </AttachButton>
+                          )}
+                        </View>
                       )}
 
                       {/**
