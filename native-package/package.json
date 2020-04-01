@@ -1,6 +1,6 @@
 {
   "name": "@carrybible/react-native-stream-chat",
-  "version": "0.6.13",
+  "version": "0.6.19",
   "keywords": [
     "chat",
     "messaging",
@@ -51,7 +51,7 @@
   },
   "dependencies": {
     "es6-symbol": "^3.1.1",
-    "@carrybible/react-native-stream-chat-core": "0.6.13"
+    "@carrybible/react-native-stream-chat-core": "0.6.19"
   },
   "peerDependencies": {
     "@react-native-community/netinfo": ">=2.0.7",

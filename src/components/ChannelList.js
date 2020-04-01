@@ -472,24 +472,24 @@ const ChannelList = withChatContext(
       }
 
       // Channel is deleted
-      if (e.type === 'channel.deleted') {
-        if (
-          this.props.onChannelDeleted &&
-          typeof this.props.onChannelDeleted === 'function'
-        ) {
-          this.props.onChannelDeleted(this, e);
-        } else {
-          const channels = this.state.channels;
-          const channelIndex = channels.findIndex(
-            (channel) => channel.cid === e.channel.cid,
-          );
-          // Remove the deleted channel from the list.
-          channels.splice(channelIndex, 1);
-          this.setState({
-            channels: [...channels],
-          });
-        }
-      }
+      // if (e.type === 'channel.deleted') {
+      //   if (
+      //     this.props.onChannelDeleted &&
+      //     typeof this.props.onChannelDeleted === 'function'
+      //   ) {
+      //     this.props.onChannelDeleted(this, e);
+      //   } else {
+      //     const channels = this.state.channels;
+      //     const channelIndex = channels.findIndex(
+      //       (channel) => channel.cid === e.channel.cid,
+      //     );
+      //     // Remove the deleted channel from the list.
+      //     channels.splice(channelIndex, 1);
+      //     this.setState({
+      //       channels: [...channels],
+      //     });
+      //   }
+      // }
 
       if (e.type === 'channel.truncated') {
         this.setState((prevState) => ({

@@ -285,10 +285,10 @@ export const MessageContent = themed(
     _setReactionPickerPosition = () => {
       const { isMyMessage, message } = this.props;
       const pos = isMyMessage(message) ? 'right' : 'left';
-      this.messageContainer.measureInWindow((x, y, width) => {
+      this.messageContainer.measureInWindow((x, y, width, height) => {
         this.setState({
           reactionPickerVisible: true,
-          rpTop: y - 60,
+          rpTop: y - 60 + height - 15,
           rpLeft: pos === 'left' ? x - 10 : null,
           rpRight:
             pos === 'right'
@@ -522,6 +522,7 @@ export const MessageContent = themed(
                 handleReaction={handleReaction}
               />
             </ContainerInner>
+            {this.props.ReactionButtons && this.props.ReactionButtons()}
             {repliesEnabled ? (
               <MessageReplies
                 message={message}

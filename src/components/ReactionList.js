@@ -135,6 +135,11 @@ export const ReactionList = themed(
         visible,
         position,
       } = this.props;
+
+      if (!this.props.getTotalReactionCount()) {
+        return null;
+      }
+
       return (
         <TouchableWrapper
           position={position}

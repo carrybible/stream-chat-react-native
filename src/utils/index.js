@@ -5,28 +5,28 @@ export { renderText } from './renderText';
 
 export const emojiData = [
   {
-    id: 'like',
-    icon: '👍',
+    id: 'pray',
+    icon: '🙏',
   },
   {
-    id: 'love',
-    icon: '❤️️',
+    id: 'hands',
+    icon: '🤲',
   },
   {
-    id: 'haha',
-    icon: '😂',
+    id: 'fire',
+    icon: '🔥',
+  },
+  {
+    id: 'sob',
+    icon: '😭',
   },
   {
     id: 'wow',
     icon: '😮',
   },
   {
-    id: 'sad',
-    icon: '😔',
-  },
-  {
-    id: 'angry',
-    icon: '😠',
+    id: 'star',
+    icon: '🌟',
   },
 ];
 
