@@ -44,7 +44,13 @@ registerNativeHandlers({
   },
   pickImage: () =>
     new Promise((resolve, reject) => {
-      ImagePicker.showImagePicker({ tintColor: '' }, (response) => {
+      const options = {
+        tintColor: '',
+        quality: 1,
+        maxWidth: 2000,
+        maxHeight: 2000,
+      };
+      ImagePicker.showImagePicker(options, (response) => {
         if (response.error) {
           reject(Error(response.error));
         }
