@@ -298,6 +298,8 @@ const Message = withKeyboardContext(
             count += reactionCounts[key];
           }
 
+          if (count === 0) return null;
+
           return count;
         });
       }

@@ -1,5 +1,5 @@
 import { Platform } from 'react-native';
-import { registerNativeHandlers } from 'stream-chat-react-native-core';
+import { registerNativeHandlers } from '@carrybible/react-native-stream-chat-core';
 import NetInfo from '@react-native-community/netinfo';
 import ImagePicker from 'react-native-image-picker';
 import DocumentPicker from 'react-native-document-picker';
@@ -44,7 +44,13 @@ registerNativeHandlers({
   },
   pickImage: () =>
     new Promise((resolve, reject) => {
-      ImagePicker.showImagePicker({}, (response) => {
+      const options = {
+        tintColor: '',
+        quality: 1,
+        maxWidth: 2000,
+        maxHeight: 2000,
+      };
+      ImagePicker.showImagePicker(options, (response) => {
         if (response.error) {
           reject(Error(response.error));
         }
@@ -96,4 +102,4 @@ if (Platform.OS === 'android') {
   }
 }
 
-export * from 'stream-chat-react-native-core';
+export * from '@carrybible/react-native-stream-chat-core';

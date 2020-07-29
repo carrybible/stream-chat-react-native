@@ -12,3 +12,5 @@ dist/
 .env*
 
 .tern-port
+*.lock
+native-package/yarn.lock
