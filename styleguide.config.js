@@ -108,6 +108,7 @@ module.exports = {
         'src/components/MessageInput/ImageUploadPreview.js',
         'src/components/MessageInput/FileUploadPreview.js',
         'src/components/MessageInput/SendButton.js',
+        'src/components/MessageInput/ActionSheetAttachment.js',
         'src/components/MessageInput/AttachButton.js',
         'src/components/AutoCompleteInput/AutoCompleteInput.js',
         'src/components/AutoCompleteInput/CommandsItem.js',
@@ -251,7 +252,6 @@ module.exports = {
             plugins: [
               'macros',
               '@babel/plugin-transform-runtime',
-              '@babel/proposal-class-properties',
               '@babel/proposal-object-rest-spread',
               'react-native-web',
             ],

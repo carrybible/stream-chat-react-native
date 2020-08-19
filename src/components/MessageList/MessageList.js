@@ -518,7 +518,8 @@ class MessageList extends PureComponent {
 
   renderItem = (message, groupStyles) => {
     if (message.type === 'message.date') {
-      this.props.dateSeparator || this.props.DateSeparator;
+      const DateSeparator =
+        this.props.dateSeparator || this.props.DateSeparator;
       return <DateSeparator message={message} />;
     } else if (message.type === 'channel.event') {
       const EventIndicator =
@@ -584,7 +585,7 @@ class MessageList extends PureComponent {
 
   renderEmptyState = () => {
     const Indicator = this.props.EmptyStateIndicator;
-    return <Indicator listType="message" />;
+    return <Indicator listType='message' />;
   };
 
   render() {
@@ -654,7 +655,7 @@ class MessageList extends PureComponent {
             ListFooterComponent={HeaderComponent}
             onEndReached={this.props.loadMore}
             inverted
-            keyboardShouldPersistTaps="always"
+            keyboardShouldPersistTaps='always'
             keyExtractor={(item) =>
               item.id ||
               item.created_at ||
