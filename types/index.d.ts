@@ -354,7 +354,7 @@ export interface AttachmentProps
     Examples include canceling a \/giphy command or shuffling the results.
     */
   actionHandler?(name: string, value: string): any;
-
+  onPress?: () => void;
   UrlPreview?: React.ElementType<CardProps>;
   Giphy?: React.ElementType<CardProps>;
   Card?: React.ElementType<CardProps>;
@@ -946,6 +946,7 @@ export interface CardProps extends StyledComponentProps {
   text?: string;
   type?: string;
   alignment?: 'right' | 'left';
+  onPress?: (event: GestureResponderEvent) => void;
   onLongPress?: (event: GestureResponderEvent) => void;
   Header: React.ElementType<CardProps>;
   Cover: React.ElementType<CardProps>;

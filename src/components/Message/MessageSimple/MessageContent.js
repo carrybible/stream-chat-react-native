@@ -724,7 +724,9 @@ class MessageContent extends React.PureComponent {
               channel={channel}
             />
           ) : null}
-          {MessageFooter && <MessageFooter {...this.props} />}
+          {MessageFooter && (
+            <MessageFooter {...this.props} openThread={this.openThread} />
+          )}
           {!MessageFooter && showTime ? (
             <MetaContainer>
               <MetaText alignment={alignment}>

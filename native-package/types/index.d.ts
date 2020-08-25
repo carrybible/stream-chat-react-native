@@ -1,1 +1,1 @@
-export * from 'stream-chat-react-native-core';
+export * from '@carrybible/react-native-stream-chat-core';

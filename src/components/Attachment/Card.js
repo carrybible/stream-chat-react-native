@@ -85,6 +85,7 @@ const Card = (props) => {
     title,
     title_link,
     type,
+    onPress,
   } = props;
 
   const { additionalTouchableProps, onLongPress } = useContext(
@@ -98,7 +99,8 @@ const Card = (props) => {
       alignment={alignment}
       onLongPress={onLongPress}
       onPress={() => {
-        goToURL(og_scrape_url || image_url || thumb_url);
+        if (onPress) onPress();
+        else goToURL(og_scrape_url || image_url || thumb_url);
       }}
       testID='card-attachment'
       {...additionalTouchableProps}
@@ -138,6 +140,7 @@ Card.propTypes = {
   type: PropTypes.string,
   alignment: PropTypes.string,
   onLongPress: PropTypes.func,
+  onPress: PropTypes.func,
   /**
    * Provide any additional props for child `TouchableOpacity`.
    * Please check docs for TouchableOpacity for supported props - https://reactnative.dev/docs/touchableopacity#props

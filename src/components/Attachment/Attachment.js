@@ -28,6 +28,7 @@ const Attachment = (props) => {
     CardHeader,
     FileAttachment,
     Gallery,
+    onPress,
   } = props;
 
   if (!attachment) {
@@ -40,6 +41,7 @@ const Attachment = (props) => {
     Header: CardHeader ? CardHeader : undefined,
     Cover: CardCover ? CardCover : undefined,
     Footer: CardFooter ? CardFooter : undefined,
+    onPress,
   };
 
   let type;
@@ -106,7 +108,7 @@ const Attachment = (props) => {
         </View>
       );
     } else {
-      return <Card alignment={alignment} {...attachment} />;
+      return <Card alignment={alignment} {...attachment} {...cardProps} />;
     }
   }
 
