@@ -1,6 +1,6 @@
 {
   "name": "@carrybible/react-native-stream-chat-core",
-  "version": "1.2.5",
+  "version": "1.2.8",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
   "react-native": "src/index.js",
@@ -33,7 +33,7 @@
     "eslint": "eslint '**/*.{js,md,ts,jsx,tsx}' --max-warnings 0",
     "analyze": "yarn build -- --stats && webpack-bundle-analyzer build/bundle-stats.json",
     "validate-translations": "node bin/validate-translations.js",
-    "lint": "prettier --list-different 'src/**/*.{js,ts,tsx,md,json}' .eslintrc.json .prettierrc .babelrc && eslint 'src/**/*.{js,ts,tsx,md}' --max-warnings 0 && stylelint 'src/**/*.{js,ts,tsx}' && yarn run validate-translations",
+    "lint": "prettier --list-different 'src/**/*.{js,ts,tsx,md,json}' .eslintrc.json .prettierrc .babelrc && eslint 'src/**/*.{js,ts,tsx,md}' --max-warnings 0 && stylelint 'src/**/*.{js,ts,tsx}'",
     "lint-fix": "prettier --write 'src/**/*.{js,ts,tsx,md,json}' .eslintrc.json .prettierrc .babelrc && eslint --fix 'src/**/*.{js,ts,tsx,md}' --max-warnings 0 && stylelint --fix 'src/**/*.{js,ts,tsx}'",
     "prepare": "yarn run build"
   },

@@ -420,6 +420,8 @@ const MessageInput = (props) => {
                       pickFile();
                     }
                   }}
+                  handlePickFile={pickFile}
+                  handlePickImage={pickImage}
                 />
               )}
               <AutoCompleteInput

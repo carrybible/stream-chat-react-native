@@ -289,7 +289,7 @@ export interface MessageInputProps
   AttachmentFileIcon?: React.ElementType<FileIconUIComponentProps>;
   AttachButton?: React.ElementType<AttachButtonProps>;
   ActionSheetAttachment?: React.ElementType<ActionSheetAttachmentProps>;
-  SendButton: React.ElementType<SendButtonProps>;
+  SendButton?: React.ElementType<SendButtonProps>;
   additionalTextInputProps?: object;
 }
 
@@ -1152,6 +1152,8 @@ export interface AttachmentActionsProps extends StyledComponentProps {
 
 export interface AttachButtonProps extends StyledComponentProps {
   handleOnPress(): void;
+  handlePickImage(): void;
+  handlePickFile(): void;
 }
 
 export interface ActionSheetAttachmentProps extends StyledComponentProps {
