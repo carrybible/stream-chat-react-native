@@ -3,6 +3,7 @@ import { registerNativeHandlers } from '@carrybible/react-native-stream-chat-cor
 import NetInfo from '@react-native-community/netinfo';
 import ImagePicker from 'react-native-image-picker';
 import DocumentPicker from 'react-native-document-picker';
+import 'react-native-get-random-values';
 
 registerNativeHandlers({
   NetInfo: {
