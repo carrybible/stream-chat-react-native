@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import DocumentPicker from 'react-native-document-picker';
 import ImagePicker from 'react-native-image-crop-picker';
-import { registerNativeHandlers } from 'stream-chat-react-native-core';
+import { registerNativeHandlers } from '@carrybible/react-native-stream-chat-core';
 
 registerNativeHandlers({
   NetInfo: {

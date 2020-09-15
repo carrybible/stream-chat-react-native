@@ -80,12 +80,12 @@ const Card = (props) => {
     Header,
     image_url,
     og_scrape_url,
+    onPress,
     text,
     thumb_url,
     title,
     title_link,
     type,
-    onPress,
   } = props;
 
   const { additionalTouchableProps, onLongPress } = useContext(

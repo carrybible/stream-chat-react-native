@@ -10,8 +10,8 @@ const TextContainer = styled.View`
     alignment === 'left' ? 'flex-start' : 'flex-end'};
   background-color: ${({ alignment, status, theme, type }) =>
     alignment === 'left' || type === 'error' || status === 'failed'
-      ? theme.colors.transparent
-      : theme.colors.light};
+      ? theme.colors.left
+      : theme.colors.right};
   border-bottom-left-radius: ${({ groupStyle, theme }) =>
     groupStyle.indexOf('left') !== -1
       ? theme.message.content.textContainer.borderRadiusS
