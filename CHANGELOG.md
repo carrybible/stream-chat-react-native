@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.3.0] 2020-09-11 (UNPUBLISHED)
+## [1.3.0] 2020-09-16 (UNPUBLISHED)
 
 **BREAKING CHANGES**
 
@@ -23,56 +23,16 @@
 
 - On upgrading to this release, ensure events and any custom handling functions (ex: `onAddedToChannel` or `onMessageNew`) are properly processed and update the list UI as expected.
 
-*ChannelContext*
+*FileUploadPreview*
 
-- We have split the `ChannelContext` into three separate contexts to further modularize the code and reduce renders as items in context change. The following contexts now contain the following values, previously all held within the `ChannelContext`:
+- We fixed a bug for being unable to remove a file from the `MessageInput` and made it consistent to `ImageUploadPreview`
+- We have removed support for the `fileUploadPreview.dismissText` theme value
+- We have added support for `fileUploadPreview.dismiss`, `fileUploadPreview.dismissImage`, and `fileUploadPreview.imageContainer` theme values
 
-  - `ChannelContext`:
+*MessageInput*
 
-    - `channel`
-    - `disabled`
-    - `EmptyStateIndicator`
-    - `error`
-    - `eventHistory`
-    - `lastRead`
-    - `loading`
-    - `markRead`
-    - `members`
-    - `read`
-    - `setLastRead`
-    - `typing`
-    - `watcherCount`
-    - `watchers`
-
-  - `MessagesContext`
-
-    - `Attachment`
-    - `clearEditingState`
-    - `editing`
-    - `editMessage`
-    - `emojiData`
-    - `hasMore`
-    - `loadingMore`
-    - `loadMore`
-    - `Message`
-    - `messages`
-    - `removeMessage`
-    - `retrySendMessage`
-    - `sendMessage`
-    - `setEditingState`
-    - `updateMessage`
-
-  - `ThreadContext`
-
-    - `closeThread`
-    - `loadMoreThread`
-    - `openThread`
-    - `thread`
-    - `threadHasMore`
-    - `threadLoadingMore`
-    - `threadMessages`
-
-- All contexts are exported and any values can be accessed through a higher order component (ex: `withMessagesContext`) or the `useContext` hook (ex: `const { messages } = useContext(MessagesContext);`)
+- We replaced the default image picker [react-native-image-picker](https://github.com/react-native-community/react-native-image-picker) for [react-native-image-crop-picker](https://github.com/ivpusic/react-native-image-crop-picker) and added `compressImageQuality` prop to support image compression out-of-the-box
+- Added `FileUploadPreview` and `ImageUploadPreview` props to support custom overrides to those components
 
 *Deprecated Props*
 

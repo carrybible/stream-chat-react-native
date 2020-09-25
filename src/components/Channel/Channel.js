@@ -5,7 +5,7 @@ import throttle from 'lodash/throttle';
 import PropTypes from 'prop-types';
 import Immutable from 'seamless-immutable';
 import { logChatPromiseExecution } from 'stream-chat';
-import { v4 as uuidv4 } from 'uuid';
+import uuidv4 from 'uuid/v4';
 
 import EmptyStateIndicatorDefault from '../Indicators/EmptyStateIndicator';
 import LoadingErrorIndicatorDefault from '../Indicators/LoadingErrorIndicator';
@@ -13,13 +13,7 @@ import LoadingIndicatorDefault from '../Indicators/LoadingIndicator';
 import KeyboardCompatibleViewDefault from '../KeyboardCompatibleView/KeyboardCompatibleView';
 import SuggestionsProvider from '../SuggestionsProvider/SuggestionsProvider';
 
-import {
-  ChannelContext,
-  ChatContext,
-  MessagesContext,
-  ThreadContext,
-  TranslationContext,
-} from '../../context';
+import { ChannelContext, ChatContext, TranslationContext } from '../../context';
 import { emojiData as emojiDataDefault } from '../../utils/utils';
 
 /**
@@ -37,7 +31,10 @@ const Channel = (props) => {
     disableIfFrozenChannel = true,
     disableKeyboardCompatibleView = false,
     emojiData = emojiDataDefault,
+    EmptyStateIndicator = EmptyStateIndicatorDefault,
     KeyboardCompatibleView = KeyboardCompatibleViewDefault,
+    LoadingErrorIndicator = LoadingErrorIndicatorDefault,
+    LoadingIndicator = LoadingIndicatorDefault,
   } = props;
 
   const { client } = useContext(ChatContext);
@@ -74,7 +71,7 @@ const Channel = (props) => {
   const [threadHasMore, setThreadHasMore] = useState(true);
   const [threadLoadingMore, setThreadLoadingMore] = useState(false);
   const [threadMessages, setThreadMessages] = useState(
-    channel.state?.threads?.[props.thread?.id] || [],
+    channel?.state?.threads?.[props.thread?.id] || [],
   );
   const [typing, setTyping] = useState(Immutable({}));
   const [watcherCount, setWatcherCount] = useState();
@@ -85,7 +82,7 @@ const Channel = (props) => {
 
     return () => {
       client.off('connection.recovered', handleEvent);
-      channel.off?.(handleEvent);
+      channel?.off?.(handleEvent);
       handleEventStateThrottled.cancel();
       loadMoreFinishedDebounced.cancel();
       loadMoreThreadFinishedDebounced.cancel();
@@ -191,8 +188,8 @@ const Channel = (props) => {
 
   const initChannel = async () => {
     let initError = false;
-
-    if (!channel.initialized) {
+    setError(false);
+    if (!channel.initialized && channel.cid) {
       try {
         await channel.watch();
       } catch (e) {
@@ -455,50 +452,47 @@ const Channel = (props) => {
   };
 
   const channelContext = {
-    channel,
-    disabled: channel.data?.frozen && disableIfFrozenChannel,
-    EmptyStateIndicator:
-      props.EmptyStateIndicator || EmptyStateIndicatorDefault,
-    error,
-    eventHistory,
-    lastRead,
-    loading,
-    markRead: markReadThrottled,
-    members,
-    read,
-    setLastRead,
-    typing,
-    watcherCount,
-    watchers,
-  };
-
-  const messagesContext = {
     Attachment: props.Attachment,
+    channel,
     clearEditingState,
+    closeThread,
+    disabled: channel?.data?.frozen && disableIfFrozenChannel,
     editing,
     editMessage,
     emojiData,
+    EmptyStateIndicator,
+    error,
+    eventHistory,
     hasMore,
+    lastRead,
+    loading,
     loadingMore,
     loadMore: loadMoreThrottled,
+    loadMoreThread,
+    markRead: markReadThrottled,
+    members,
     Message: props.Message,
     messages,
+    openThread,
+    read,
     removeMessage,
     retrySendMessage,
     sendMessage,
     setEditingState,
-    updateMessage,
-  };
-
-  const threadContext = {
-    closeThread,
-    loadMoreThread,
-    openThread,
+    setLastRead,
     thread,
     threadHasMore,
     threadLoadingMore,
     threadMessages,
+    typing,
+    updateMessage,
+    watcherCount,
+    watchers,
   };
+
+  if (!channel || error) {
+    return <LoadingErrorIndicator error={error} listType='message' />;
+  }
 
   if (!channel?.cid || !channel.watch) {
     return (
@@ -508,24 +502,14 @@ const Channel = (props) => {
     );
   }
 
-  if (error) {
-    const { LoadingErrorIndicator = LoadingErrorIndicatorDefault } = props;
-    return <LoadingErrorIndicator error={error} listType='message' />;
-  }
-
   if (loading) {
-    const { LoadingIndicator = LoadingIndicatorDefault } = props;
     return <LoadingIndicator listType='message' />;
   }
 
   return (
     <KeyboardCompatibleView enabled={!disableKeyboardCompatibleView}>
       <ChannelContext.Provider value={channelContext}>
-        <MessagesContext.Provider value={messagesContext}>
-          <ThreadContext.Provider value={threadContext}>
-            <SuggestionsProvider>{children}</SuggestionsProvider>
-          </ThreadContext.Provider>
-        </MessagesContext.Provider>
+        <SuggestionsProvider>{children}</SuggestionsProvider>
       </ChannelContext.Provider>
     </KeyboardCompatibleView>
   );

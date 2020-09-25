@@ -8,8 +8,8 @@ import { logChatPromiseExecution } from 'stream-chat';
 
 import ActionSheetAttachmentDefault from './ActionSheetAttachment';
 import AttachButtonDefault from './AttachButton';
-import FileUploadPreview from './FileUploadPreview';
-import ImageUploadPreview from './ImageUploadPreview';
+import FileUploadPreviewDefault from './FileUploadPreview';
+import ImageUploadPreviewDefault from './ImageUploadPreview';
 import SendButtonDefault from './SendButton';
 
 import { useMessageDetailsForState } from './hooks/useMessageDetailsForState';
@@ -22,9 +22,7 @@ import {
   ChannelContext,
   ChatContext,
   KeyboardContext,
-  MessagesContext,
   SuggestionsContext,
-  ThreadContext,
   TranslationContext,
 } from '../../context';
 import iconClose from '../../images/icons/icon_close.png';
@@ -80,16 +78,13 @@ const InputBoxContainer = styled.View`
  * [Channel Context](https://getstream.github.io/stream-chat-react-native/#channelcontext),
  * [Chat Context](https://getstream.github.io/stream-chat-react-native/#chatcontext),
  * [Keyboard Context](https://getstream.github.io/stream-chat-react-native/#keyboardcontext),
- * [Messages Context](https://getstream.github.io/stream-chat-react-native/#messagescontext),
  * [Suggestions Context](https://getstream.github.io/stream-chat-react-native/#suggestionscontext),
- * [Thread Context](https://getstream.github.io/stream-chat-react-native/#threadcontext), and
  * [Translation Context](https://getstream.github.io/stream-chat-react-native/#translationcontext)
  *
  * @example ../docs/MessageInput.md
  */
 const MessageInput = (props) => {
   const channelContext = useContext(ChannelContext);
-  const { channel, disabled = false, members, watchers } = channelContext;
 
   const chatContext = useContext(ChatContext);
   const { client } = chatContext;
@@ -97,19 +92,19 @@ const MessageInput = (props) => {
   const keyboardContext = useContext(KeyboardContext);
   const { dismissKeyboard } = keyboardContext;
 
-  const messagesContext = useContext(MessagesContext);
   const {
+    channel,
     clearEditingState,
+    disabled = false,
     editing,
     editMessage,
+    members,
     sendMessage: sendMessageContext,
-  } = messagesContext;
+    watchers,
+  } = channelContext;
 
   const suggestionsContext = useContext(SuggestionsContext);
   const { setInputBoxContainerRef } = suggestionsContext;
-
-  // TODO: not sure if this is actually needed but adding it in from the previously all encompassing usage of withChannelContext
-  const threadContext = useContext(ThreadContext);
 
   const translationContext = useContext(TranslationContext);
   const { t } = translationContext;
@@ -123,8 +118,10 @@ const MessageInput = (props) => {
     compressImageQuality,
     doDocUploadRequest,
     doImageUploadRequest,
+    FileUploadPreview = FileUploadPreviewDefault,
     hasFilePicker = true,
     hasImagePicker = true,
+    ImageUploadPreview = ImageUploadPreviewDefault,
     initialValue,
     Input,
     maxNumberOfFiles,
@@ -142,9 +139,7 @@ const MessageInput = (props) => {
     ...channelContext,
     ...chatContext,
     ...keyboardContext,
-    ...messagesContext,
     ...suggestionsContext,
-    ...threadContext,
     ...translationContext,
   };
 
@@ -872,10 +867,26 @@ MessageInput.propTypes = {
    * @param channel Current channel object
    * */
   doImageUploadRequest: PropTypes.func,
+  /**
+   * Custom UI component for FileUploadPreview.
+   * Defaults to and accepts same props as: https://github.com/GetStream/stream-chat-react-native/blob/master/src/components/MessageInput/FileUploadPreview.js
+   */
+  FileUploadPreview: PropTypes.oneOfType([
+    PropTypes.node,
+    PropTypes.elementType,
+  ]),
   /** If component should have file picker functionality  */
   hasFilePicker: PropTypes.bool,
   /** If component should have image picker functionality  */
   hasImagePicker: PropTypes.bool,
+  /**
+   * Custom UI component for ImageUploadPreview.
+   * Defaults to and accepts same props as: https://github.com/GetStream/stream-chat-react-native/blob/master/src/components/MessageInput/ImageUploadPreview.js
+   */
+  ImageUploadPreview: PropTypes.oneOfType([
+    PropTypes.node,
+    PropTypes.elementType,
+  ]),
   /** Initial value to set on input */
   initialValue: PropTypes.string,
   /** Limit on allowed number of files to attach at a time. */

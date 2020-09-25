@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import styled from '@stream-io/styled-components';
 import PropTypes from 'prop-types';
-import { v4 as uuidv4 } from 'uuid';
+import uuidv4 from 'uuid/v4';
 
 import DefaultDateSeparator from './DateSeparator';
 import MessageNotification from './MessageNotification';
@@ -15,13 +15,7 @@ import { getLastReceivedMessage } from './utils/getLastReceivedMessage';
 
 import DefaultMessage from '../Message/Message';
 
-import {
-  ChannelContext,
-  ChatContext,
-  MessagesContext,
-  ThreadContext,
-  TranslationContext,
-} from '../../context';
+import { ChannelContext, ChatContext, TranslationContext } from '../../context';
 
 const ListContainer = styled.FlatList`
   flex: 1;
@@ -52,8 +46,6 @@ const ErrorNotification = styled.View`
  *
  * [ChannelContext](https://getstream.github.io/stream-chat-react-native/#channelcontext)
  * [ChatContext](https://getstream.github.io/stream-chat-react-native/#chatcontext)
- * [MessagesContext](https://getstream.github.io/stream-chat-react-native/#messagescontext)
- * [ThreadContext](https://getstream.github.io/stream-chat-react-native/#threadcontext)
  * [TranslationContext](https://getstream.github.io/stream-chat-react-native/#translationcontext)
  *
  * @example ../docs/MessageList.md
@@ -76,17 +68,18 @@ const MessageList = (props) => {
     TypingIndicator = DefaultTypingIndicator,
   } = props;
 
-  const { channel, disabled, EmptyStateIndicator, markRead } = useContext(
-    ChannelContext,
-  );
-  const { client, isOnline } = useContext(ChatContext);
   const {
+    channel,
     clearEditingState,
+    disabled,
     editing,
+    EmptyStateIndicator,
     loadMore: mainLoadMore,
+    loadMoreThread,
+    markRead,
     Message: MessageFromContext,
-  } = useContext(MessagesContext);
-  const { loadMoreThread } = useContext(ThreadContext);
+  } = useContext(ChannelContext);
+  const { client, isOnline } = useContext(ChatContext);
   const { t } = useContext(TranslationContext);
 
   const Message = MessageFromProps || MessageFromContext;
