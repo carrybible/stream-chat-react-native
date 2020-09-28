@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
+import { Keyboard } from 'react-native';
 import styled from '@stream-io/styled-components';
 import uniq from 'lodash/uniq';
 import { lookup } from 'mime-types';
@@ -90,7 +91,6 @@ const MessageInput = (props) => {
   const { client } = chatContext;
 
   const keyboardContext = useContext(KeyboardContext);
-  const { dismissKeyboard } = keyboardContext;
 
   const {
     channel,
@@ -402,7 +402,7 @@ const MessageInput = (props) => {
               getUsers={getUsers}
               handleOnPress={async () => {
                 if (hasImagePicker && hasFilePicker) {
-                  await dismissKeyboard();
+                  await Keyboard.dismiss();
                   attachActionSheet.current.show();
                 } else if (hasImagePicker && !hasFilePicker) pickImage();
                 else if (!hasImagePicker && hasFilePicker) pickFile();
@@ -430,7 +430,7 @@ const MessageInput = (props) => {
                   disabled={disabled}
                   handleOnPress={async () => {
                     if (hasImagePicker && hasFilePicker) {
-                      await dismissKeyboard();
+                      await Keyboard.dismiss();
                       attachActionSheet.current.show();
                     } else if (hasImagePicker && !hasFilePicker) pickImage();
                     else if (!hasImagePicker && hasFilePicker) {
@@ -471,7 +471,7 @@ const MessageInput = (props) => {
     sending.current = true;
 
     const prevText = text;
-    await setText('');
+    setText('');
     if (inputBox.current) {
       inputBox.current.clear();
     }
@@ -544,6 +544,7 @@ const MessageInput = (props) => {
       logChatPromiseExecution(updateMessagePromise, 'update message');
 
       sending.current = false;
+      if (props.onSendMessage) props.onSendMessage(prevText);
     } else {
       try {
         sendMessageContext({
@@ -561,6 +562,7 @@ const MessageInput = (props) => {
           (prevNumberOfUploads) => prevNumberOfUploads - attachments.length,
         );
         setText('');
+        if (props.onSendMessage) props.onSendMessage(prevText);
       } catch (err) {
         sending.current = false;
         setText(prevText);
@@ -905,6 +907,7 @@ MessageInput.propTypes = {
    * Defaults to and accepts same props as: [SendButton](https://getstream.github.io/stream-chat-react-native/#sendbutton)
    */
   SendButton: PropTypes.oneOfType([PropTypes.node, PropTypes.elementType]),
+  onSendMessage: PropTypes.func,
   /**
    * For images still in uploading state when user hits send, send text immediately and send image as follow-up message once uploaded
    */
