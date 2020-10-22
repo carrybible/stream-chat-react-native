@@ -19,46 +19,45 @@
 - [Register](https://getstream.io/chat/trial/) to get an API key for Stream Chat
 - [React Native Chat Tutorial](https://getstream.io/chat/react-native-chat/tutorial/)
 - [Chat UI Kit](https://getstream.io/chat/ui-kit/)
-- [Release Notes](https://github.com/GetStream/stream-chat-react-native/blob/master/CHANGELOG.md)
+- [Release Notes](https://github.com/GetStream/stream-chat-react-native/releases)
 - [Internationalisation (i18n)](#internationalisation)
 - [Cookbook](https://github.com/GetStream/stream-chat-react-native/wiki/Cookbook)  :rocket:
-
 
 ## Contents
 
 - [React Native Compatibility](#react-native-compatibility)
 - [React Native Chat Tutorial](#react-native-chat-tutorial)
 - [Example Apps](#example-apps)
-  - [Expo Example](#expo-example)
-  - [Native Example](#native-example)
+  - [Expo example](#expo-example)
   - [Slack clone](#slack-clone)
 - [Docs](#docs)
 - [Keep in mind](#keep-in-mind)
-- [Setup](#setup)
+- [Setup](#setup-setting-up-a-chat-app)
   - [Expo package](#expo-package)
   - [Native package](#native-package)
   - Native Web package _(currently under development. Please follow progress at [#206](https://github.com/GetStream/stream-chat-react-native/issues/206))_
-- [Upgrade](#upgrade)
-- [Common Issues](#common-issues)
-- [Contributing](#contributing)
+  - [TypeScript Support](#typescript-support)
+  - [Upgrade](#upgrade)
+  - [Common issues](#common-issues)
+  - [Contributing](#contributing)
 
+## 🔐 React Native Compatibility
 
-## React Native Compatibility
 To use this library you need to ensure you match up with the correct version of React Native you are using.
-
 
 | `stream-chat-react-native` version | Required React Native Version |
 | ----------------------------------------- | --------- |
+| `2.x.x` (beta)                            | `>= 0.60` |
 | `1.x.x`                                   | `>= 0.59` |
 | `0.x.x`                                   | `*` |
 
-## React Native Chat Tutorial
+## 📖 React Native Chat Tutorial
 
 The best place to start is the [React Native Chat Tutorial](https://getstream.io/chat/react-native-chat/tutorial/). It teaches you how to use this SDK and also shows how to make frequently required changes.
 
-## Example Apps
+## 🔮 Example Apps
 
-This repo includes 2 example apps. One made with Expo, and one Native.
+This repo includes 3 example apps. One made with Expo, one Native JavaScript code, and one in TypeScript.
 
 <div style="display: inline">
   <img src="./screenshots/1.png" alt="IMAGE ALT TEXT HERE" width="250" border="1" style="margin-right: 30px" />
@@ -78,23 +77,31 @@ This repo includes 2 example apps. One made with Expo, and one Native.
 
 ### Native example
 
-1. Please make sure you have installed necessary dependencies depending on your development OS and target OS. Follow the guidelines given on official React Native documentation for installing dependencies: https://facebook.github.io/react-native/docs/getting-started#
+1. Please make sure you have installed necessary dependencies depending on your development OS and target OS. Follow the guidelines given on official React Native documentation for installing dependencies: <https://facebook.github.io/react-native/docs/getting-started>#
 2. Make sure node version is >= v10.13.0
 3. Start the simulator
 
 4. ```bash
    git clone https://github.com/GetStream/stream-chat-react-native.git
+   cd stream-chat-react-native
+   yarn
+   cd stream-chat-react-native/native-package
+   yarn
    cd stream-chat-react-native/examples/NativeMessaging
-   yarn install
+   yarn
    ```
+
 5. - For iOS
+
      ```bash
      cd ios && pod install && cd ..
-     react-native run-ios
+     yarn ios
      ```
+
    - For android
+
      ```bash
-     react-native run-android
+     yarn android
      ```
 
    If you run into following error on android:
@@ -120,24 +127,24 @@ Check out our tutorial on how to build a slack clone using react-native and stre
 
 - **Source code for app**
 
-  - **react native** https://github.com/GetStream/slack-clone-react-native/
-  - **expo** https://github.com/GetStream/slack-clone-expo/
+  - **react native** <https://github.com/GetStream/slack-clone-react-native/>
+  - **expo** <https://github.com/GetStream/slack-clone-expo/>
 
-## Docs
+## 📋 Docs
 
 The [styleguidist docs for stream-chat-react-native](https://getstream.github.io/stream-chat-react-native/) document how all the components work.
 
 The React Native components are created using the stream-chat-js library. If you're customizing the components, it's essential to learn how the Chat Server API works. You'll want to review our [JS chat API docs](https://getstream.io/chat/docs/js/).
 
-## Keep in mind
+## 💬 Keep in mind
 
 1. Navigation between different components is something we expect consumers to implement. You can check out the example given in this repository
 
 2. Minor releases may come with some breaking changes, so always check the release notes before upgrading the minor version.
 
-You can see detailed documentation about the components at https://getstream.github.io/stream-chat-react-native
+You can see detailed documentation about the components at <https://getstream.github.io/stream-chat-react-native>
 
-## Setup (Setting up a chat app)
+## 🛠 Setup (Setting up a chat app)
 
 ### Expo package
 
@@ -159,10 +166,10 @@ expo install @react-native-community/netinfo expo-document-picker expo-image-pic
 
 Please check the [example](https://github.com/GetStream/stream-chat-react-native/blob/master/examples/ExpoMessaging/App.js) to see usage of the components.
 
-OR you can swap [this file](https://github.com/GetStream/stream-chat-react-native/blob/master/examples/ExpoMessaging/App.js) for your `App.js` in the root folder with by following these additional steps:
+OR you can swap [this file](https://github.com/GetStream/stream-chat-react-native/blob/master/examples/ExpoMessaging/App.js) for your `App.js` in the root folder and follow these additional steps:
 
 ```bash
-yarn add react-navigation@3.2.1 react-native-gesture-handler react-native-reanimated
+yarn add @react-native-community/masked-view @react-navigation/native @react-navigation/stack react-native-gesture-handler react-native-get-random-values react-native-reanimated react-native-safe-area-context react-native-screens
 ```
 
 and finally
@@ -171,7 +178,7 @@ and finally
 yarn start
 ```
 
-### Native package:
+### Native package
 
 #### For react native < 0.60
 
@@ -199,11 +206,11 @@ react-native link react-native-document-picker
 
 Please check the [example](https://github.com/GetStream/stream-chat-react-native/blob/master/examples/NativeMessaging/App.js) to see the usage of these components.
 
-OR you can swap this file for your `App.js` in the root folder and follow this guide for your installed version https://reactnavigation.org/docs/getting-started#installing-dependencies-into-a-bare-react-native-project
+OR you can swap this file for your `App.js` in the root folder and follow this guide for your installed version <https://reactnavigation.org/docs/getting-started#installing-dependencies-into-a-bare-react-native-project>
 
-If you are planning to use the image crop picker, there are some additional steps to be done. You can find them here - https://github.com/ivpusic/react-native-image-crop-picker/blob/v0.25.0/README.md#install
+If you are planning to use the image crop picker, there are some additional steps to be done. You can find them here - <https://github.com/ivpusic/react-native-image-crop-picker/blob/v0.25.0/README.md#install>
 
-If you are planning to use file/document picker, you need to enable iCloud capability in your app - https://github.com/Elyx0/react-native-document-picker#reminder
+If you are planning to use file/document picker, you need to enable iCloud capability in your app - <https://github.com/Elyx0/react-native-document-picker#reminder>
 
 and finally
 
@@ -217,36 +224,37 @@ react-native run-ios
 react-native init StreamChatReactNativeExample
 cd StreamChatReactNativeExample
 yarn add stream-chat-react-native
-yarn add @react-native-community/netinfo react-native-image-crop-picker react-native-document-picker
+yarn add @react-native-community/netinfo react-native-image-crop-picker react-native-document-picker react-native-get-random-values
 cd ios && pod install && cd ..
-
 ```
+
+**You also need to import `react-native-get-random-values` in your index.js in root directory, before importing your main app component.**
 
 Just to be sure, please verify you are using the appropriate version of the following packages as per your react-native version.
 
-- netinfo : https://github.com/react-native-community/react-native-netinfo#react-native-compatibility
+- netinfo : <https://github.com/react-native-community/react-native-netinfo#react-native-compatibility>
 
-- react-native-image-crop-picker : https://github.com/ivpusic/react-native-image-crop-picker#important-note
+- react-native-image-crop-picker : <https://github.com/ivpusic/react-native-image-crop-picker#important-note>
 
 Please check the [example](https://github.com/GetStream/stream-chat-react-native/blob/master/examples/NativeMessaging/App.js) to see the usage of components.
 
 OR you can swap this file for your `App.js` in the root folder by following these additional steps:
 
 ```bash
-yarn add @react-native-community/masked-view @react-navigation/native @react-navigation/stack react-native-gesture-handler react-native-reanimated react-native-safe-area-context react-native-screens
+yarn add @react-native-community/masked-view @react-navigation/native @react-navigation/stack react-native-gesture-handler  react-native-reanimated react-native-safe-area-context react-native-screens
 cd ios && pod install && cd ..
 ```
 
-If you are planning to use an image crop picker, there are some additional steps to be done. You can find them here - https://github.com/ivpusic/react-native-image-crop-picker#install
+If you are planning to use an image crop picker, there are some additional steps to be done. You can find them here - <https://github.com/ivpusic/react-native-image-crop-picker#install>
 
-If you are planning to use file/document picker, you need to enable iCloud capability in your app - https://github.com/Elyx0/react-native-document-picker#reminder
+If you are planning to use file/document picker, you need to enable iCloud capability in your app - <https://github.com/Elyx0/react-native-document-picker#reminder>
 
 and finally
 
 **iOS**:
 
 ```bash
-npx react-native run-ios
+yarn ios
 ```
 
 **Note for Android**:
@@ -255,7 +263,7 @@ If you are using AndroidX app:
 
 > AndroidX is a major step forward in the Android ecosystem, and the old support library artifacts are being deprecated. For 0.60, React Native has been migrated over to AndroidX. This is a breaking change, and your native code and dependencies will need to be migrated as well.
 
-(Reference: https://facebook.github.io/react-native/blog/2019/07/03/version-60#androidx-support)
+(Reference: <https://facebook.github.io/react-native/blog/2019/07/03/version-60#androidx-support>)
 
 In current context, dependencies such as `react-native-document-picker` and (if you are using `react-navigation`) `react-native-gesture-handler`, `react-native-reanimated` don't have AndroidX support. But an awesome tool named [jetifier](https://github.com/mikehardy/jetifier) is quite useful to patch these dependencies with AndroidX support.
 
@@ -263,39 +271,27 @@ In current context, dependencies such as `react-native-document-picker` and (if 
 
 ![Enable iCloud capability](https://camo.githubusercontent.com/ac300ca7e3bbab573a76c151469a89efd8b31e72/68747470733a2f2f33313365353938373731386233343661616638332d66356538323532373066323961383466373838313432333431303338343334322e73736c2e6366312e7261636b63646e2e636f6d2f313431313932303637342d656e61626c652d69636c6f75642d64726976652e706e67)
 
-## Upgrade
+## 💪 TypeScript Support
 
-- Upgrade from 1.2.x to 1.3.x:
-  - 1.3.x replaced native dependency support for react-native-image-picker in favor of react-native-image-crop-picker for multi-image selection capabilities
+As of version `2.0.0` `stream-chat-react-native` has been converted to TypeScript. Please read [Typescript guide](https://github.com/GetStream/stream-chat-react-native/wiki/Typescript-support) for details.
 
-- Upgrade from 0.1.x to 0.2.x:
+## ✈️ Internationalisation
 
-  - 0.2.x added support for react native 0.60. Dependencies like `react-native-image-picker`, `react-native-document-picker` and `netinfo` have been taken out of hard dependencies and moved to peer dependencies and thus will have to be installed manually on consumer end ([Reference](https://github.com/GetStream/stream-chat-react-native/pull/52/files#diff-83a54d8caab0ea9fcdd5f832b03a5d83))
-  - React Native 0.60 came with auto-linking functionality that means if some native libraries are linked manually before the upgrade, they will have to be unlinked, so that React Native can auto-link them ([Reference](https://facebook.github.io/react-native/blog/2019/07/03/version-60#native-modules-are-now-autolinked))
+Please read [Internationalization doc](https://github.com/GetStream/stream-chat-react-native/wiki/Internationalization-(i18n)) for details.
 
-    ```
-    react-native unlink react-native-image-picker
-    react-native unlink react-native-document-picker
-    react-native unlink @react-native-community/netinfo
-    ```
+## 🚀 Upgrading
 
-  - React Native 0.60 has been migrated over to AndroidX. In the current context, dependencies such as `react-native-document-picker` and (if you are using `react-navigation`) `react-native-gesture-handler`, `react-native-reanimated` don't have AndroidX support. But an excellent tool named [jetifier](https://github.com/mikehardy/jetifier) is quite useful to patch these dependencies with AndroidX support.
+Please refer to [Upgrade Helper](https://github.com/GetStream/stream-chat-react-native/wiki/Upgrade-helper)
 
-  - CocoaPods are not part of React Native's iOS project ([ref](https://facebook.github.io/react-native/blog/2019/07/03/version-60#cocoapods-by-default)). Thus make sure to install all the pod dependencies.
+## ⚠️ Common issues
 
-    ```
-    cd ios && pod install && cd ..
-    ```
+#### While running native example, you may (not necessarily) run into the following issues
 
-## Common issues
-
-#### While running native example, you may (not necessarily) run into the following issues:
-
-1. When you execute `react-native run-ios` for the first time, it starts a metro bundler in parallel. It can result in some errors since the build process isn't complete yet. Try the following to fix this:
+1. When you execute `yarn ios` for the first time, it starts a metro bundler in parallel. It can result in some errors since the build process isn't complete yet. Try the following to fix this:
    1. Close/stop the metro bundler process.
    2. Let the build process finish. It can usually take around 2-3 minutes for the first time.
    3. Start the metro bundler manually by executing `yarn start` inside `stream-chat-react-native/examples/NativeMessaging` directory.
-2. When you execute `react-native run-android`, you may (not necessarily) run into following error:
+2. When you execute `yarn android`, you may (not necessarily) run into following error:
 
    ```ERROR
    info Starting JS server...
@@ -325,68 +321,13 @@ In current context, dependencies such as `react-native-document-picker` and (if 
 
    1. Create a file named `local.properties` inside `stream-chat-react-native/examples/NativeMessaging/android` directory
    2. Put the this line in that file. Make sure sdk path is correctly mentioned as per your system:
+
       ```
       sdk.dir=/Users/{user_name}/Library/Android/sdk/
       ```
-   3. Rerun `react-native run-android` in `stream-chat-react-native/examples/NativeMessaging` directory
 
-## Internationalisation
+   3. Rerun `yarn android` in `stream-chat-react-native/examples/NativeMessaging` directory
 
-Instance of class `Streami18n` should be provided to the Chat component to handle translations.
-Stream provides the following list of built-in translations for components:
-
-1.  English (en)
-2.  Dutch (nl)
-3.  Russian (ru)
-4.  Turkish (tr)
-5.  French (fr)
-6.  Italian (it)
-7.  Hindi (hi)
-
-The default language is English. The simplest way to start using chat components in one of the in-built languages is the following:
-
-Simplest way to start using chat components in one of the in-built languages would be following:
-
-```js static
-const i18n = new Streami18n({ language: 'nl' });
-<Chat client={chatClient} i18nInstance={i18n}>
-  ...
-</Chat>;
-```
-
-If you would like to override certain keys in in-built translation:
-
-```js static
-const i18n = new Streami18n({
-  language: 'nl',
-  translationsForLanguage: {
-    'Nothing yet...': 'Nog Niet ...',
-    '{{ firstUser }} and {{ secondUser }} are typing...':
-      '{{ firstUser }} en {{ secondUser }} zijn aan het typen...',
-  },
-});
-```
-
-You can find all the available keys here: https://github.com/GetStream/stream-chat-react-native/tree/master/src/i18n
-
-They are also exported as a JSON object from the library.
-
-```js static
-import {
-  enTranslations,
-  nlTranslations,
-  ruTranslations,
-  trTranslations,
-  frTranslations,
-  hiTranslations,
-  itTranslations,
-  esTranslations,
-} from 'stream-chat-react-native'; // or 'stream-chat-expo'
-```
-
-Please read this docs on i18n for more details and further customizations - https://getstream.github.io/stream-chat-react-native/#streami18n
-
-## Contributing
+## 👏 Contributing
 
 We welcome code changes that improve this library or fix a problem, and please make sure to follow all best practices and test all the changes. Please check our [dev setup docs](https://github.com/GetStream/stream-chat-react-native/wiki/Dev-setup-for-contributing-to-the-library) to get you started. We are pleased to merge your code into the official repository. Make sure to sign our [Contributor License Agreement (CLA)](https://docs.google.com/forms/d/e/1FAIpQLScFKsKkAJI7mhCr7K9rEIOpqIDThrWxuvxnwUq2XkHyG154vQ/viewform) first. See our license file for more details.
-
