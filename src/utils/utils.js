@@ -2,25 +2,30 @@ import debounce from 'lodash/debounce';
 
 export const emojiData = [
   {
-    icon: '🙏',
-    id: 'pray',
+    icon: '❤️',
+    id: 'heart',
   },
   {
-    icon: '🤲',
+    icon: '😆',
     id: 'hands',
+  },
+  {
+    icon: '😮',
+    id: 'wow',
+  },
+  {
+    icon: '🙏',
+    id: 'pray',
   },
   {
     icon: '🔥',
     id: 'fire',
   },
   {
-    icon: '😭',
+    icon: '👍',
     id: 'sob',
   },
-  {
-    icon: '😮',
-    id: 'wow',
-  },
+
   {
     icon: '🌟',
     id: 'star',

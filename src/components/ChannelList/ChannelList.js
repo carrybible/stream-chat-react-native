@@ -12,6 +12,7 @@ import { useConnectionRecovered } from './hooks/listeners/useConnectionRecovered
 import { useNewMessage } from './hooks/listeners/useNewMessage';
 import { useNewMessageNotification } from './hooks/listeners/useNewMessageNotification';
 import { usePaginatedChannels } from './hooks/usePaginatedChannels';
+import { useChannelMuted } from './hooks/listeners/useChannelMuted';
 import { useRemovedFromChannelNotification } from './hooks/listeners/useRemovedFromChannelNotification';
 import { useUserPresence } from './hooks/listeners/useUserPresence';
 
@@ -75,6 +76,7 @@ const ChannelList = (props) => {
   useNewMessage({ lockChannelOrder, setChannels });
   useNewMessageNotification({ onMessageNew, setChannels });
   useRemovedFromChannelNotification({ onRemovedFromChannel, setChannels });
+  useChannelMuted({ setChannels });
   useUserPresence({ setChannels });
 
   return (

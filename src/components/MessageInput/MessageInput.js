@@ -275,12 +275,12 @@ const MessageInput = (props) => {
     setMentionedUsers((prevMentionedUsers) => [...prevMentionedUsers, item.id]);
   };
 
-  const pickFile = async () => {
+  const pickFile = () => {
     if (maxNumberOfFiles && numberOfUploads >= maxNumberOfFiles) {
       return;
     }
 
-    const result = await pickDocument({ maxNumberOfFiles });
+    const result = pickDocument({ maxNumberOfFiles });
     if (!result.cancelled) {
       if (result.docs) {
         // condition to support react-native-image-crop-picker
@@ -464,7 +464,7 @@ const MessageInput = (props) => {
     );
   };
 
-  const sendMessage = async () => {
+  const sendMessage = () => {
     if (sending.current) {
       return;
     }
@@ -899,6 +899,7 @@ MessageInput.propTypes = {
    * @param newText
    */
   onChangeText: PropTypes.func,
+  onSendMessage: PropTypes.func,
   /** Parent message object - in case of thread */
   parent: PropTypes.object,
   /**
@@ -907,7 +908,7 @@ MessageInput.propTypes = {
    * Defaults to and accepts same props as: [SendButton](https://getstream.github.io/stream-chat-react-native/#sendbutton)
    */
   SendButton: PropTypes.oneOfType([PropTypes.node, PropTypes.elementType]),
-  onSendMessage: PropTypes.func,
+
   /**
    * For images still in uploading state when user hits send, send text immediately and send image as follow-up message once uploaded
    */
