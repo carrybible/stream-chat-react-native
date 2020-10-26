@@ -585,7 +585,7 @@ export const MessageInput = <
     }
   };
 
-  const handleOnPress = async () => {
+  const handleOnPress = () => {
     if (
       (maxNumberOfFiles && numberOfUploads >= maxNumberOfFiles) ||
       numberOfUploads >= 10

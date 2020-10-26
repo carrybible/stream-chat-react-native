@@ -21,7 +21,7 @@ export type AttachButtonProps = {
   /** Disables the button */
   disabled?: boolean;
   /** Function that opens an attachment action sheet */
-  handleOnPress?: (event: GestureResponderEvent) => void;
+  handleOnPress?: (event: GestureResponderEvent) => void | Promise<void>;
 };
 
 /**
