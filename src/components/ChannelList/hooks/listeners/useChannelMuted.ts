@@ -1,15 +1,15 @@
-import { useContext, useEffect } from 'react';
+import { useEffect } from 'react';
 
-import { ChatContext } from '../../../../context';
+import { useChatContext } from '../../../../contexts/chatContext/ChatContext';
 
-export const useChannelMuted = ({ setChannels }) => {
-  const { client } = useContext(ChatContext);
+export const useChannelMuted = ({ setChannels }: { setChannels: any }) => {
+  const { client } = useChatContext();
 
   useEffect(() => {
-    const handleEvent = (e) => {
-      setChannels((channels) => {
-        const muteChannels = e.me.channel_mutes.map((m) => m.channel.cid);
-        const newChannel = channels.map((c) => {
+    const handleEvent = (e: any) => {
+      setChannels((channels: any) => {
+        const muteChannels = e.me.channel_mutes.map((m: any) => m.channel.cid);
+        const newChannel = channels.map((c: any) => {
           c.muted = muteChannels.includes(c.cid);
           return c;
         });

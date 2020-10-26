@@ -146,14 +146,16 @@ describe('ReactionPickerWrapper', () => {
         expect(queryByTestId(`${emoji.id}-reaction`)).toBeTruthy();
         expect(
           queryByTestId(
-            `${emoji.id}-${defaultProps.message.reaction_counts[emoji.id] ||
-              'count'}`,
+            `${emoji.id}-${
+              defaultProps.message.reaction_counts[emoji.id] || 'count'
+            }`,
           ),
         ).toBeTruthy();
         expect(
           getByTestId(
-            `${emoji.id}-${defaultProps.message.reaction_counts[emoji.id] ||
-              'count'}`,
+            `${emoji.id}-${
+              defaultProps.message.reaction_counts[emoji.id] || 'count'
+            }`,
           ),
         ).toHaveTextContent(
           defaultProps.message.reaction_counts[emoji.id] || '',
@@ -192,14 +194,16 @@ describe('ReactionPickerWrapper', () => {
         expect(queryByTestId(`${emoji.id}-reaction`)).toBeTruthy();
         expect(
           queryByTestId(
-            `${emoji.id}-${defaultProps.message.reaction_counts[emoji.id] ||
-              'count'}`,
+            `${emoji.id}-${
+              defaultProps.message.reaction_counts[emoji.id] || 'count'
+            }`,
           ),
         ).toBeTruthy();
         expect(
           getByTestId(
-            `${emoji.id}-${defaultProps.message.reaction_counts[emoji.id] ||
-              'count'}`,
+            `${emoji.id}-${
+              defaultProps.message.reaction_counts[emoji.id] || 'count'
+            }`,
           ),
         ).toHaveTextContent(
           defaultProps.message.reaction_counts[emoji.id] || '',
@@ -238,8 +242,9 @@ describe('ReactionPickerWrapper', () => {
         expect(queryByTestId(`${emoji.id}-reaction`)).toBeFalsy();
         expect(
           queryByTestId(
-            `${emoji.id}-${defaultProps.message.reaction_counts[emoji.id] ||
-              'count'}`,
+            `${emoji.id}-${
+              defaultProps.message.reaction_counts[emoji.id] || 'count'
+            }`,
           ),
         ).toBeFalsy();
         expect(props.openReactionPicker).toHaveBeenCalledTimes(0);

@@ -233,7 +233,7 @@ export type MessageInputProps<
       handleOnPress: () => Promise<void>;
       isValidMessage: () => boolean;
       onSelectItem: (item: UserResponse<Us>) => void;
-      sendMessage: () => Promise<void>;
+      sendMessage: () => Promise<void> | void;
       setInputBoxContainerRef: (ref: View | null) => void;
       updateMessage: () => Promise<void>;
       uploadNewFile: (file: {
@@ -253,6 +253,7 @@ export type MessageInputProps<
    * @param newText
    */
   onChangeText?: (newText: string) => void;
+  onSendMessage?: (prevText: string) => void;
   /** Parent message id - in case of thread */
   parent_id?: StreamMessage<At, Me, Us>['parent_id'];
   /**
@@ -594,7 +595,7 @@ export const MessageInput = <
 
     if (hasImagePicker) {
       if (hasFilePicker) {
-        await Keyboard.dismiss();
+        Keyboard.dismiss();
         if (attachActionSheet?.current) {
           attachActionSheet.current.show();
         }
@@ -681,17 +682,15 @@ export const MessageInput = <
               {(hasImagePicker || hasFilePicker) && (
                 <AttachButton
                   disabled={disabled}
-                  handleOnPress={async () => {
+                  handleOnPress={() => {
                     if (hasImagePicker && hasFilePicker) {
-                      await Keyboard.dismiss();
-                      attachActionSheet.current.show();
+                      Keyboard.dismiss();
+                      attachActionSheet.current?.show();
                     } else if (hasImagePicker && !hasFilePicker) pickImage();
                     else if (!hasImagePicker && hasFilePicker) {
                       pickFile();
                     }
                   }}
-                  handlePickFile={pickFile}
-                  handlePickImage={pickImage}
                 />
               )}
               <AutoCompleteInput<Co, Us>
@@ -719,7 +718,7 @@ export const MessageInput = <
     sending.current = true;
 
     const prevText = text;
-    await setText('');
+    setText('');
     if (inputBoxRef.current) {
       inputBoxRef.current.clear();
     }

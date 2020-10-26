@@ -89,6 +89,8 @@ export type CardProps<
    * Accepts the same props as Card component.
    */
   Header?: React.ComponentType<CardProps<At>>;
+
+  onPress?: () => void;
 };
 
 /**
