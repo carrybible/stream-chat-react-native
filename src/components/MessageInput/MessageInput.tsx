@@ -230,7 +230,7 @@ export type MessageInputProps<
       closeAttachActionSheet: () => void;
       disabled: boolean;
       getUsers: () => UserResponse<Us>[];
-      handleOnPress: () => Promise<void>;
+      handleOnPress: () => void;
       isValidMessage: () => boolean;
       onSelectItem: (item: UserResponse<Us>) => void;
       sendMessage: () => Promise<void> | void;

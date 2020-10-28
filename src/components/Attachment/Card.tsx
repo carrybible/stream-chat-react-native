@@ -144,8 +144,8 @@ export const Card = <At extends UnknownType = DefaultAttachmentType>(
       ) : (
         <CardFooter>
           <View style={{ backgroundColor: 'transparent' }}>
-            {title && <FooterTitle>{title}</FooterTitle>}
-            {text && <FooterDescription>{text}</FooterDescription>}
+            {title ? <FooterTitle>{title}</FooterTitle> : null}
+            {text ? <FooterDescription>{text}</FooterDescription> : null}
             <FooterLink>{trimUrl(title_link || og_scrape_url)}</FooterLink>
           </View>
           {type === 'giphy' && <FooterLogo source={giphyLogo} />}
