@@ -230,10 +230,10 @@ export type MessageInputProps<
       closeAttachActionSheet: () => void;
       disabled: boolean;
       getUsers: () => UserResponse<Us>[];
-      handleOnPress: () => Promise<void>;
+      handleOnPress: () => any;
       isValidMessage: () => boolean;
       onSelectItem: (item: UserResponse<Us>) => void;
-      sendMessage: () => Promise<void> | void;
+      sendMessage: () => any;
       setInputBoxContainerRef: (ref: View | null) => void;
       updateMessage: () => Promise<void>;
       uploadNewFile: (file: {
