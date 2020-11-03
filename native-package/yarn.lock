@@ -1609,10 +1609,40 @@ source-map@^0.5.0:
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.5.7.tgz#8a039d2d1021d22d1ea14c80d8ea468ba2ef3fcc"
   integrity sha1-igOdLRAh0i0eoUyA2OpGi6LvP8w=
 
+<<<<<<< HEAD
 stream-chat@2.7.0:
   version "2.7.0"
   resolved "https://registry.yarnpkg.com/stream-chat/-/stream-chat-2.7.0.tgz#a1f9fe1474d270cee9e0e118953d7dcbbadd90ba"
   integrity sha512-JRhw5JyIrS9bKVhLzEu57BxXTExMlxCJu0YXdMryJh9Wnl0XOzzjwCwYqZIFWFWH52RGyovQ+8VxkRzURStowg==
+=======
+stream-chat-react-native-core@v2.0.0-dev-sc.0:
+  version "2.0.0-dev-sc.0"
+  resolved "https://registry.yarnpkg.com/stream-chat-react-native-core/-/stream-chat-react-native-core-2.0.0-dev-sc.0.tgz#d494aaefadadbea7e2e090a3c1bb7764e167882e"
+  integrity sha512-vJ+V1uYQ0RHHTHVQgtf1wUjeWZNpTOmoD3x7GYGd8nR2MeMZOLzXgPQAasLyqJfgbwcECem0zQIRvJ+VgJwhpQ==
+  dependencies:
+    "@babel/runtime" "7.11.2"
+    "@stream-io/react-native-simple-markdown" "1.2.1"
+    anchorme "^1.1.2"
+    dayjs "1.9.3"
+    file-loader "6.1.1"
+    i18next "19.8.2"
+    lodash-es "4.17.15"
+    metro-react-native-babel-preset "^0.56.0"
+    mime-types "2.1.27"
+    path "0.12.7"
+    react-art "^16.8.6"
+    react-native-actionsheet "2.4.2"
+    react-native-image-zoom-viewer "3.0.1"
+    seamless-immutable "7.1.4"
+    stream-chat "2.6.0"
+    styled-components "5.2.0"
+    uuid "8.3.1"
+
+stream-chat@2.6.0:
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/stream-chat/-/stream-chat-2.6.0.tgz#2fae6e4c5a56a8f86dee0676654fe2511d751aab"
+  integrity sha512-hI1aIMCkcGektSOt7Gt2CrrKmHKn31ovbJ+IWz1rsgdZHiWLCG2QG7JgGUKeoJVD/Ix501CjnEugZHlFdbZLwg==
+>>>>>>> 97e879e71aa8802dd8c1b2004bd33dd51cec1a4e
   dependencies:
     "@babel/runtime" "^7.11.2"
     "@types/jsonwebtoken" "^8.5.0"

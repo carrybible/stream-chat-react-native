@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "name": "@carrybible/react-native-stream-chat",
   "version": "2.0.2",
   "keywords": [
@@ -6,11 +7,24 @@
     "messaging",
     "react-native"
   ],
+=======
+  "name": "stream-chat-react-native",
+  "version": "2.0.0",
+  "author": {
+    "company": "Stream.io Inc",
+    "name": "Stream.io Inc"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+>>>>>>> 97e879e71aa8802dd8c1b2004bd33dd51cec1a4e
   "main": "src/index.js",
   "types": "types/index.d.ts",
   "dependencies": {
     "es6-symbol": "^3.1.3",
+<<<<<<< HEAD
     "@carrybible/react-native-stream-chat-core": "2.0.2"
+=======
+    "stream-chat-react-native-core": "v2.0.0"
+>>>>>>> 97e879e71aa8802dd8c1b2004bd33dd51cec1a4e
   },
   "peerDependencies": {
     "@react-native-community/netinfo": ">=2.0.7",
