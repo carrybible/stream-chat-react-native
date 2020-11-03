@@ -6,6 +6,8 @@ export const BASE_FONT_SIZE = 16;
 export const Colors = {
   danger: '#EDD8DD',
   light: '#EBEBEB',
+  left: 'transparent',
+  right: '#EBEBEB',
   primary: '#006cff',
   secondary: '#111',
   textDark: 'rgba(0,0,0,1)',

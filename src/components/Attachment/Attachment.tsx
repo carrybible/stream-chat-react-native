@@ -217,6 +217,6 @@ export const Attachment = <At extends UnknownType = DefaultAttachmentType>(
       </View>
     );
   } else {
-    return <Card<At> alignment={alignment} {...attachment} />;
+    return <Card<At> alignment={alignment} {...attachment} {...cardProps} />;
   }
 };
