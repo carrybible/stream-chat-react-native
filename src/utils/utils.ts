@@ -27,28 +27,33 @@ import type {
 
 export const emojiData = [
   {
-    icon: '👍',
-    id: 'like',
+    icon: '❤️',
+    id: 'heart',
   },
   {
-    icon: '❤️️',
-    id: 'love',
-  },
-  {
-    icon: '😂',
-    id: 'haha',
+    icon: '😆',
+    id: 'hands',
   },
   {
     icon: '😮',
     id: 'wow',
   },
   {
-    icon: '😔',
-    id: 'sad',
+    icon: '🙏',
+    id: 'pray',
   },
   {
-    icon: '😠',
-    id: 'angry',
+    icon: '🔥',
+    id: 'fire',
+  },
+  {
+    icon: '👍',
+    id: 'sob',
+  },
+
+  {
+    icon: '🌟',
+    id: 'star',
   },
 ];
 

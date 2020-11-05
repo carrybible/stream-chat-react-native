@@ -51,18 +51,18 @@ export const useChannelUpdated = <
 
   useEffect(() => {
     const handleEvent = (event: Event<At, Ch, Co, Ev, Me, Re, Us>) => {
+      setChannels((channels) => {
+        const index = channels.findIndex(
+          (channel) => channel.cid === (event.cid || event.channel?.cid),
+        );
+        if (index >= 0 && event.channel) {
+          channels[index].data = event.channel;
+        }
+        return [...channels];
+      });
+
       if (typeof onChannelUpdated === 'function') {
         onChannelUpdated(setChannels, event);
-      } else {
-        setChannels((channels) => {
-          const index = channels.findIndex(
-            (channel) => channel.cid === (event.cid || event.channel?.cid),
-          );
-          if (index >= 0 && event.channel) {
-            channels[index].data = event.channel;
-          }
-          return [...channels];
-        });
       }
     };
 

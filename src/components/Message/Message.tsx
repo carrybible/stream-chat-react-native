@@ -379,8 +379,9 @@ const areEqual = <
     prevMessage.latest_reactions?.length ===
     nextMessage.latest_reactions?.length;
   const repliesEqual = prevMessage.reply_count === nextMessage.reply_count;
+  const groupStylesEqual = prevMessage.groupStyles === nextMessage.groupStyles;
 
-  return messageEqual && reactionsEqual && repliesEqual;
+  return messageEqual && reactionsEqual && repliesEqual && groupStylesEqual;
 };
 
 const MemoizedDefaultMessage = React.memo(
