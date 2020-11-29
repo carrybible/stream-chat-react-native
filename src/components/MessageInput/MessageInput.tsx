@@ -310,7 +310,7 @@ export const MessageInput = <
     ImageUploadPreview = ImageUploadPreviewDefault,
     initialValue,
     Input,
-    maxNumberOfFiles,
+    maxNumberOfFiles = 10,
     onChangeText: onChangeTextProp,
     parent_id,
     SendButton = SendButtonDefault,
@@ -371,6 +371,10 @@ export const MessageInput = <
   useEffect(() => {
     if (editing && inputBoxRef.current) {
       inputBoxRef.current.focus();
+    }
+
+    if (!editing) {
+      resetInput();
     }
   }, [editing]);
 
@@ -526,14 +530,13 @@ export const MessageInput = <
   };
 
   const pickFile = async () => {
-    if (
-      (maxNumberOfFiles && numberOfUploads >= maxNumberOfFiles) ||
-      numberOfUploads > 10
-    ) {
+    if (maxNumberOfFiles && numberOfUploads >= maxNumberOfFiles) {
       return;
     }
 
-    const result = await pickDocument({ maxNumberOfFiles });
+    const result = await pickDocument({
+      maxNumberOfFiles: maxNumberOfFiles - numberOfUploads,
+    });
     if (!result.cancelled && result.docs) {
       result.docs.forEach((doc) => {
         const mimeType = lookup(doc.name);
@@ -548,16 +551,13 @@ export const MessageInput = <
   };
 
   const pickImage = async () => {
-    if (
-      (maxNumberOfFiles && numberOfUploads >= maxNumberOfFiles) ||
-      numberOfUploads > 10
-    ) {
+    if (maxNumberOfFiles && numberOfUploads >= maxNumberOfFiles) {
       return;
     }
 
     const result = await pickImageNative({
       compressImageQuality,
-      maxNumberOfFiles,
+      maxNumberOfFiles: maxNumberOfFiles - numberOfUploads,
     });
 
     if (!result.cancelled && result.images) {
@@ -710,6 +710,16 @@ export const MessageInput = <
       </Container>
     );
   };
+  const resetInput = (pendingAttachments: Attachment[] = []) => {
+    setFileUploads([]);
+    setImageUploads([]);
+    setMentionedUsers([]);
+    setNumberOfUploads(
+      (prevNumberOfUploads) =>
+        prevNumberOfUploads - (pendingAttachments?.length || 0),
+    );
+    setText('');
+  };
 
   const sendMessage = () => {
     if (sending.current) {
@@ -743,7 +753,10 @@ export const MessageInput = <
         }
       }
 
-      if (image.state === FileState.UPLOADED) {
+      if (
+        image.state === FileState.UPLOADED ||
+        image.state === FileState.FINISHED
+      ) {
         attachments.push({
           fallback: image.file.name,
           image_url: image.url,
@@ -761,7 +774,10 @@ export const MessageInput = <
         sending.current = false;
         return;
       }
-      if (file.state === FileState.UPLOADED) {
+      if (
+        file.state === FileState.UPLOADED ||
+        file.state === FileState.FINISHED
+      ) {
         attachments.push({
           asset_url: file.url,
           file_size: file.file.size,
@@ -788,10 +804,10 @@ export const MessageInput = <
 
       // TODO: Remove this line and show an error when submit fails
       clearEditingState();
-
       const updateMessagePromise = editMessage(updatedMessage).then(
         clearEditingState,
       );
+      resetInput(attachments);
       logChatPromiseExecution(updateMessagePromise, 'update message');
 
       sending.current = false;
@@ -806,16 +822,18 @@ export const MessageInput = <
         } as unknown) as StreamMessage<At, Me, Us>);
 
         sending.current = false;
-        setFileUploads([]);
-        setImageUploads([]);
-        setMentionedUsers([]);
-        setNumberOfUploads(
-          (prevNumberOfUploads) =>
-            prevNumberOfUploads - (attachments?.length || 0),
-        );
-        setText('');
+        // setFileUploads([]);
+        // setImageUploads([]);
+        // setMentionedUsers([]);
+        // setNumberOfUploads(
+        //   (prevNumberOfUploads) =>
+        //     prevNumberOfUploads - (attachments?.length || 0),
+        // );
+        // setText('');
+        resetInput(attachments);
         if (props.onSendMessage) props.onSendMessage(prevText);
-      } catch (err) {
+      } catch (_error) {
+        
         sending.current = false;
         setText(prevText);
         console.log('Failed to send message');
@@ -843,7 +861,7 @@ export const MessageInput = <
         } as StreamMessage<At, Me, Us>);
       }
 
-      setText('');
+      resetInput();
       clearEditingState();
     } catch (error) {
       console.log(error);
@@ -1040,8 +1058,8 @@ export const MessageInput = <
         <IconSquare
           icon={iconClose}
           onPress={() => {
+            resetInput();
             clearEditingState();
-            setText('');
           }}
         />
       </EditingBoxHeader>
