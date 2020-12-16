@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import {
   ChannelListMessenger,
@@ -306,6 +306,11 @@ export const ChannelList = <
     options,
     sort,
   });
+
+  useEffect(() => {
+    // TODO: Use sync api endpoint to refresh the list, instead of calling queryChannels.
+    refreshList();
+  }, [forceUpdate]);
 
   // Setup event listeners
   useAddedToChannelNotification({
