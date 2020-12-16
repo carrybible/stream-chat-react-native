@@ -398,7 +398,6 @@ const areEqual = <
     prevMessage.latest_reactions?.length ===
     nextMessage.latest_reactions?.length;
   const repliesEqual = prevMessage.reply_count === nextMessage.reply_count;
-  const groupStylesEqual = prevMessage.groupStyles === nextMessage.groupStyles;
 
   const readByEqual = prevReadBy === nextReadBy;
   return (
