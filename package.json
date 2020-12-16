@@ -1,6 +1,6 @@
 {
   "name": "@carrybible/react-native-stream-chat-core",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
   "react-native": "src/index.ts",
@@ -128,6 +128,7 @@
     "@types/react-native-actionsheet": "2.4.1",
     "@types/react-test-renderer": "16.9.3",
     "@types/styled-components": "5.1.4",
+    "@types/uuid": "^8.3.0",
     "@typescript-eslint/eslint-plugin": "4.4.1",
     "@typescript-eslint/parser": "4.4.1",
     "babel-eslint": "10.1.0",
