@@ -1,76 +1,43 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  ImageRequireSource,
   Keyboard,
-  TextInput,
-  TextInputProps,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
-import uniq from 'lodash/uniq';
-import { lookup } from 'mime-types';
-import {
-  Attachment,
-  logChatPromiseExecution,
-  SendFileAPIResponse,
-  Message as StreamMessage,
-  UpdatedMessage,
-  UserResponse,
-} from 'stream-chat';
 
-import {
-  ActionSheetAttachment as ActionSheetAttachmentDefault,
-  ActionSheetProps,
-  ActionSheetStyles,
-} from './ActionSheetAttachment';
-import {
-  AttachButton as AttachButtonDefault,
-  AttachButtonProps,
-} from './AttachButton';
-import {
-  FileUploadPreview as FileUploadPreviewDefault,
-  FileUploadPreviewProps,
-} from './FileUploadPreview';
-import {
-  ImageUploadPreview as ImageUploadPreviewDefault,
-  ImageUploadPreviewProps,
-} from './ImageUploadPreview';
-import { SendButton as SendButtonDefault, SendButtonProps } from './SendButton';
+import { AttachmentSelectionBar } from '../AttachmentPicker/components/AttachmentSelectionBar';
+import { AutoCompleteInput } from '../AutoCompleteInput/AutoCompleteInput';
+import { SuggestionsList } from '../AutoCompleteInput/SuggestionsList';
 
-import {
-  FileUpload,
-  ImageUpload,
-  useMessageDetailsForState,
-} from './hooks/useMessageDetailsForState';
-import { generateRandomId } from '../../utils/generateRandomId';
-
-import {
-  AutoCompleteInput,
-  AutoCompleteInputProps,
-} from '../AutoCompleteInput/AutoCompleteInput';
-import { IconSquare } from '../IconSquare';
-
+import { useAttachmentPickerContext } from '../../contexts/attachmentPickerContext/AttachmentPickerContext';
 import {
   ChannelContextValue,
   useChannelContext,
 } from '../../contexts/channelContext/ChannelContext';
-import { useChatContext } from '../../contexts/chatContext/ChatContext';
 import {
-  isEditingBoolean,
+  MessageInputContextValue,
+  useMessageInputContext,
+} from '../../contexts/messageInputContext/MessageInputContext';
+import {
+  MessagesContextValue,
   useMessagesContext,
 } from '../../contexts/messagesContext/MessagesContext';
-import { useSuggestionsContext } from '../../contexts/suggestionsContext/SuggestionsContext';
-import { useTranslationContext } from '../../contexts/translationContext/TranslationContext';
-import { pickDocument, pickImage as pickImageNative } from '../../native';
-import { styled } from '../../styles/styledComponents';
 import {
-  ACITriggerSettings,
-  FileState,
-  TriggerSettings,
-} from '../../utils/utils';
+  SuggestionsContextValue,
+  useSuggestionsContext,
+} from '../../contexts/suggestionsContext/SuggestionsContext';
+import { useTheme } from '../../contexts/themeContext/ThemeContext';
+import {
+  TranslationContextValue,
+  useTranslationContext,
+} from '../../contexts/translationContext/TranslationContext';
+import { CircleClose, CurveLineLeftUp, Edit, Lightning } from '../../icons';
 
-import type { ActionSheetCustom } from 'react-native-actionsheet';
+import type { UserResponse } from 'stream-chat';
 
-import type { FileIconProps } from '../Attachment/FileIcon';
+import type { Asset } from '../../native';
 import type {
   DefaultAttachmentType,
   DefaultChannelType,
@@ -82,59 +49,73 @@ import type {
   UnknownType,
 } from '../../types/types';
 
-const iconClose: ImageRequireSource = require('../../images/icons/icon_close.png');
+const styles = StyleSheet.create({
+  autoCompleteInputContainer: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  composerContainer: {
+    alignItems: 'flex-end',
+    flexDirection: 'row',
+  },
+  container: {
+    borderTopWidth: 1,
+    padding: 10,
+  },
+  editingBoxHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingBottom: 10,
+  },
+  editingBoxHeaderTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  giphyContainer: {
+    alignItems: 'center',
+    borderRadius: 12,
+    flexDirection: 'row',
+    height: 24,
+    marginRight: 8,
+    paddingHorizontal: 8,
+  },
+  giphyText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  inputBoxContainer: {
+    borderRadius: 20,
+    borderWidth: 1,
+    flex: 1,
+  },
+  optionsContainer: {
+    flexDirection: 'row',
+    paddingBottom: 10,
+    paddingRight: 10,
+  },
+  replyContainer: { paddingBottom: 12, paddingHorizontal: 8 },
+  sendButtonContainer: { paddingBottom: 10, paddingLeft: 10 },
+  suggestionsListContainer: {
+    borderRadius: 10,
+    elevation: 3,
+    left: 8,
+    position: 'absolute',
+    right: 8,
+    shadowOffset: { height: 1, width: 0 },
+    shadowOpacity: 0.15,
+  },
+});
 
-const Container = styled.View<{ imageUploads: ImageUpload[] }>`
-  background-color: rgba(0, 0, 0, 0.05);
-  border-radius: 10px;
-  margin-horizontal: 10px;
-  padding-top: ${({ imageUploads, theme }) =>
-    imageUploads && imageUploads.length
-      ? theme.messageInput.container.conditionalPadding
-      : 0}px;
-  ${({ theme }) => theme.messageInput.container.css};
-`;
-
-const EditingBoxContainer = styled.View`
-  background-color: white;
-  padding-horizontal: 0px;
-  shadow-color: grey;
-  shadow-opacity: 0.5;
-  z-index: 100;
-  ${({ theme }) => theme.messageInput.editingBoxContainer.css};
-`;
-
-const EditingBoxHeader = styled.View`
-  align-items: center;
-  flex-direction: row;
-  justify-content: space-between;
-  padding: 10px;
-  ${({ theme }) => theme.messageInput.editingBoxHeader.css};
-`;
-
-const EditingBoxHeaderTitle = styled.Text`
-  font-weight: bold;
-  ${({ theme }) => theme.messageInput.editingBoxHeaderTitle.css};
-`;
-
-// have to wrap the react-native View because styled-components don't work well with ref setting
-const InputBoxContainer = styled(View)`
-  align-items: center;
-  flex-direction: row;
-  margin: 10px;
-  min-height: 46px;
-  padding-horizontal: 10px;
-  ${({ theme }) => theme.messageInput.inputBoxContainer.css};
-`;
-
-export type MessageInputProps<
-  At extends UnknownType = DefaultAttachmentType,
+type MessageInputPropsWithContext<
+  At extends DefaultAttachmentType = DefaultAttachmentType,
   Ch extends UnknownType = DefaultChannelType,
   Co extends string = DefaultCommandType,
   Ev extends UnknownType = DefaultEventType,
   Me extends UnknownType = DefaultMessageType,
   Re extends UnknownType = DefaultReactionType,
   Us extends UnknownType = DefaultUserType
+<<<<<<< HEAD
 > = {
   /**
    * Custom UI component for ActionSheetAttachment.
@@ -277,19 +258,62 @@ export type MessageInputProps<
    */
   setInputRef?: (ref: TextInput | null) => void;
 };
+=======
+> = Pick<
+  ChannelContextValue<At, Ch, Co, Ev, Me, Re, Us>,
+  'disabled' | 'members' | 'watchers'
+> &
+  Pick<
+    MessageInputContextValue<At, Ch, Co, Ev, Me, Re, Us>,
+    | 'additionalTextInputProps'
+    | 'appendText'
+    | 'asyncIds'
+    | 'asyncUploads'
+    | 'AttachButton'
+    | 'CommandsButton'
+    | 'clearEditingState'
+    | 'clearQuotedMessageState'
+    | 'editing'
+    | 'FileUploadPreview'
+    | 'fileUploads'
+    | 'giphyActive'
+    | 'hasCommands'
+    | 'hasFilePicker'
+    | 'hasImagePicker'
+    | 'ImageUploadPreview'
+    | 'imageUploads'
+    | 'Input'
+    | 'inputBoxRef'
+    | 'InputButtons'
+    | 'isValidMessage'
+    | 'maxNumberOfFiles'
+    | 'MoreOptionsButton'
+    | 'numberOfUploads'
+    | 'pickFile'
+    | 'quotedMessage'
+    | 'resetInput'
+    | 'SendButton'
+    | 'sending'
+    | 'sendMessageAsync'
+    | 'setGiphyActive'
+    | 'setShowMoreOptions'
+    | 'showMoreOptions'
+    | 'ShowThreadMessageInChannelButton'
+    | 'removeImage'
+    | 'uploadNewImage'
+    | 'uploadsEnabled'
+  > &
+  Pick<MessagesContextValue<At, Ch, Co, Ev, Me, Re, Us>, 'Reply'> &
+  Pick<
+    SuggestionsContextValue<Co, Us>,
+    'componentType' | 'suggestions' | 'suggestionsTitle'
+  > &
+  Pick<TranslationContextValue, 't'> & {
+    threadList?: boolean;
+  };
+>>>>>>> 5a2d0e827dd4a4067058787b49b07c584f3e370c
 
-/**
- * UI Component for message input
- * It's a consumer of
- * [Channel Context](https://getstream.github.io/stream-chat-react-native/#channelcontext),
- * [Chat Context](https://getstream.github.io/stream-chat-react-native/#chatcontext),
- * [Messages Context](https://getstream.github.io/stream-chat-react-native/#messagescontext),
- * [Suggestions Context](https://getstream.github.io/stream-chat-react-native/#suggestionscontext), and
- * [Translation Context](https://getstream.github.io/stream-chat-react-native/#translationcontext)
- *
- * @example ./MessageInput.md
- */
-export const MessageInput = <
+export const MessageInputWithContext = <
   At extends DefaultAttachmentType = DefaultAttachmentType,
   Ch extends UnknownType = DefaultChannelType,
   Co extends string = DefaultCommandType,
@@ -298,83 +322,156 @@ export const MessageInput = <
   Re extends UnknownType = DefaultReactionType,
   Us extends UnknownType = DefaultUserType
 >(
-  props: MessageInputProps<At, Ch, Co, Ev, Me, Re, Us>,
+  props: MessageInputPropsWithContext<At, Ch, Co, Ev, Me, Re, Us>,
 ) => {
   const {
-    ActionSheetAttachment = ActionSheetAttachmentDefault,
-    actionSheetStyles,
     additionalTextInputProps,
-    AttachButton = AttachButtonDefault,
-    AttachmentFileIcon,
-    compressImageQuality,
-    disabled: disabledProp,
-    doDocUploadRequest,
-    doImageUploadRequest,
-    FileUploadPreview = FileUploadPreviewDefault,
-    hasFilePicker = true,
-    hasImagePicker = true,
-    ImageUploadPreview = ImageUploadPreviewDefault,
-    initialValue,
-    autocompleteSuggestionsLimit = 10,
+    appendText,
+    asyncIds,
+    asyncUploads,
+    clearEditingState,
+    clearQuotedMessageState,
+    componentType,
+    disabled,
+    editing,
+    FileUploadPreview,
+    fileUploads,
+    giphyActive,
+    hasFilePicker,
+    hasImagePicker,
+    ImageUploadPreview,
+    imageUploads,
     Input,
-    maxNumberOfFiles = 10,
-    onChangeText: onChangeTextProp,
-    parent_id,
-    SendButton = SendButtonDefault,
-    sendImageAsync = false,
-    setInputRef,
+    inputBoxRef,
+    InputButtons,
+    isValidMessage,
+    maxNumberOfFiles,
+    members,
+    numberOfUploads,
+    pickFile,
+    quotedMessage,
+    removeImage,
+    Reply,
+    resetInput,
+    SendButton,
+    sending,
+    sendMessageAsync,
+    setGiphyActive,
+    ShowThreadMessageInChannelButton,
+    suggestions,
+    suggestionsTitle,
+    t,
+    threadList,
+    uploadNewImage,
+    watchers,
   } = props;
 
-  const {
-    channel,
-    disabled: disabledContext = false,
-    members,
-    watchers,
-  } = useChannelContext<At, Ch, Co, Ev, Me, Re, Us>();
-
-  const disabled = disabledProp || disabledContext;
-
-  const { client } = useChatContext<At, Ch, Co, Ev, Me, Re, Us>();
+  const [height, setHeight] = useState(0);
 
   const {
-    clearEditingState,
-    editing,
-    editMessage,
-    sendMessage: sendMessageContext,
-  } = useMessagesContext<At, Ch, Co, Ev, Me, Re, Us>();
+    theme: {
+      colors: {
+        accent_blue,
+        black,
+        border,
+        grey,
+        grey_gainsboro,
+        grey_whisper,
+        white,
+        white_smoke,
+      },
+      messageInput: {
+        attachmentSelectionBar,
+        autoCompleteInputContainer,
+        composerContainer,
+        container,
+        editingBoxHeader,
+        editingBoxHeaderTitle,
+        giphyContainer,
+        giphyText,
+        inputBoxContainer,
+        optionsContainer,
+        replyContainer,
+        sendButtonContainer,
+        suggestionsListContainer,
+      },
+    },
+  } = useTheme();
 
-  const { setInputBoxContainerRef } = useSuggestionsContext<Co, Us>();
+  const {
+    attachmentPickerBottomSheetHeight,
+    attachmentSelectionBarHeight,
+    bottomInset,
+    closePicker,
+    openPicker,
+    selectedImages,
+    selectedPicker,
+    setMaxNumberOfFiles,
+    setSelectedImages,
+    setSelectedPicker,
+  } = useAttachmentPickerContext();
 
-  const { t } = useTranslationContext();
+  useEffect(() => {
+    setMaxNumberOfFiles(maxNumberOfFiles ?? 10);
 
-  const attachActionSheet = useRef<ActionSheetCustom | null>(null);
-  const inputBoxRef = useRef<TextInput | null>(null);
-  const sending = useRef(false);
-
-  const [asyncIds, setAsyncIds] = useState<string[]>([]);
-  const [asyncUploads, setAsyncUploads] = useState<{
-    [key: string]: {
-      state: string;
-      url: string;
+    return () => {
+      closePicker();
+      setSelectedPicker(undefined);
     };
-  }>({});
+  }, [maxNumberOfFiles]);
 
-  const {
-    fileUploads,
-    imageUploads,
-    mentionedUsers,
-    numberOfUploads,
-    setFileUploads,
-    setImageUploads,
-    setMentionedUsers,
-    setNumberOfUploads,
-    setText,
-    text,
-  } = useMessageDetailsForState<At, Ch, Co, Ev, Me, Re, Us>(
-    editing,
-    initialValue,
-  );
+  const selectedImagesLength = selectedImages.length;
+  const imageUploadsLength = imageUploads.length;
+  useEffect(() => {
+    if (selectedImagesLength > imageUploadsLength) {
+      const imagesToUpload = selectedImages.filter((selectedImage) => {
+        const uploadedImage = imageUploads.find(
+          (imageUpload) =>
+            imageUpload.file.uri === selectedImage.uri ||
+            imageUpload.url === selectedImage.uri,
+        );
+        return !uploadedImage;
+      });
+      imagesToUpload.forEach((image) => uploadNewImage(image));
+    } else if (selectedImagesLength < imageUploadsLength) {
+      const imagesToRemove = imageUploads.filter(
+        (imageUpload) =>
+          !selectedImages.find(
+            (selectedImage) =>
+              selectedImage.uri === imageUpload.file.uri ||
+              selectedImage.uri === imageUpload.url,
+          ),
+      );
+      imagesToRemove.forEach((image) => removeImage(image.id));
+    }
+  }, [selectedImagesLength]);
 
+  useEffect(() => {
+    if (imageUploadsLength < selectedImagesLength) {
+      const updatedSelectedImages = selectedImages.filter((selectedImage) => {
+        const uploadedImage = imageUploads.find(
+          (imageUpload) =>
+            imageUpload.file.uri === selectedImage.uri ||
+            imageUpload.url === selectedImage.uri,
+        );
+        return uploadedImage;
+      });
+      setSelectedImages(updatedSelectedImages);
+    } else if (imageUploadsLength > selectedImagesLength) {
+      setSelectedImages(
+        imageUploads
+          .map((imageUpload) => ({
+            height: imageUpload.file.height,
+            source: imageUpload.file.source,
+            uri: imageUpload.url,
+            width: imageUpload.file.width,
+          }))
+          .filter(Boolean) as Asset[],
+      );
+    }
+  }, [imageUploadsLength]);
+
+  const editingExists = !!editing;
   useEffect(() => {
     if (editing && inputBoxRef.current) {
       inputBoxRef.current.focus();
@@ -383,45 +480,12 @@ export const MessageInput = <
     if (!editing) {
       resetInput();
     }
-  }, [editing]);
+  }, [editingExists]);
 
-  const sendMessageAsync = (id: string) => {
-    const image = asyncUploads[id];
-    if (!image || image.state === FileState.UPLOAD_FAILED) {
-      return;
-    }
-
-    if (image.state === FileState.UPLOADED) {
-      const attachments = [
-        {
-          image_url: image.url,
-          type: 'image',
-        },
-      ] as StreamMessage<At, Me, Us>['attachments'];
-
-      try {
-        sendMessageContext(({
-          attachments,
-          mentioned_users: [],
-          parent_id,
-          text: '',
-        } as unknown) as Partial<StreamMessage<At, Me, Us>>);
-
-        setAsyncIds((prevAsyncIds) =>
-          prevAsyncIds.splice(prevAsyncIds.indexOf(id), 1),
-        );
-        setAsyncUploads((prevAsyncUploads) => {
-          delete prevAsyncUploads[id];
-          return prevAsyncUploads;
-        });
-
-        setNumberOfUploads((prevNumberOfUploads) => prevNumberOfUploads - 1);
-      } catch (_error) {
-        console.log('Failed');
-      }
-    }
-  };
-
+  const asyncIdsString = asyncIds.join();
+  const asyncUploadsString = Object.values(asyncUploads)
+    .map(({ state, url }) => `${state}${url}`)
+    .join();
   useEffect(() => {
     if (Object.keys(asyncUploads).length) {
       /**
@@ -432,29 +496,16 @@ export const MessageInput = <
       asyncIds.forEach((id) => sendMessageAsync(id));
       sending.current = false;
     }
-  }, [asyncIds, asyncUploads, sending, sendMessageAsync]);
-
-  const appendText = (newText: string) => {
-    setText((prevText) => `${prevText}${newText}`);
-  };
-
-  const closeAttachActionSheet = () => {
-    if (attachActionSheet.current) {
-      /**
-       * Hide doesn't exist until we bump @types/react-native-actionsheet from this
-       * PR being merged: https://github.com/DefinitelyTyped/DefinitelyTyped/pull/48275
-       */
-      // @ts-expect-error
-      attachActionSheet.current.hide();
-    }
-  };
+  }, [asyncIdsString, asyncUploadsString, sendMessageAsync]);
 
   const getMembers = () => {
     const result: UserResponse<Us>[] = [];
     if (members && Object.values(members).length) {
-      Object.values(members).forEach((member) =>
-        result.push(member.user as UserResponse<Us>),
-      );
+      Object.values(members).forEach((member) => {
+        if (member.user) {
+          result.push(member.user);
+        }
+      });
     }
 
     return result;
@@ -467,7 +518,7 @@ export const MessageInput = <
     const uniqueUsers: { [key: string]: UserResponse<Us> } = {};
     for (const user of users) {
       if (user && !uniqueUsers[user.id]) {
-        uniqueUsers[user.id] = user as UserResponse<Us>;
+        uniqueUsers[user.id] = user;
       }
     }
     const usersArray = Object.values(uniqueUsers);
@@ -478,120 +529,45 @@ export const MessageInput = <
   const getWatchers = () => {
     const result: UserResponse<Us>[] = [];
     if (watchers && Object.values(watchers).length) {
-      result.push(...(Object.values(watchers) as UserResponse<Us>[]));
+      result.push(...Object.values(watchers));
     }
 
     return result;
   };
 
-  /** Checks if the message is valid or not. Accordingly we can enable/disable send button */
-  const isValidMessage = () => {
-    if (text) {
-      return true;
-    }
-
-    for (const image of imageUploads) {
-      if (!image || image.state === FileState.UPLOAD_FAILED) {
-        continue;
-      }
-      if (image.state === FileState.UPLOADING) {
-        // TODO: show error to user that they should wait until image is uploaded
-        return false;
-      }
-
-      return true;
-    }
-
-    for (const file of fileUploads) {
-      if (!file || file.state === FileState.UPLOAD_FAILED) {
-        continue;
-      }
-      if (file.state === FileState.UPLOADING) {
-        // TODO: show error to user that they should wait until image is uploaded
-        return false;
-      }
-
-      return true;
-    }
-
-    return false;
-  };
-
-  const onChangeText = (newText: string) => {
-    if (sending.current) {
-      return;
-    }
-    setText(newText);
-
-    if (newText && channel) {
-      logChatPromiseExecution(channel.keystroke(), 'start typing event');
-    }
-
-    if (onChangeTextProp) {
-      onChangeTextProp(newText);
+  const openAttachmentPicker = () => {
+    if (hasImagePicker && !fileUploads.length) {
+      Keyboard.dismiss();
+      openPicker();
+      setSelectedPicker('images');
+    } else if (hasFilePicker && numberOfUploads < maxNumberOfFiles) {
+      pickFile();
     }
   };
 
-  const onSelectItem = (item: UserResponse<Us>) => {
-    setMentionedUsers((prevMentionedUsers) => [...prevMentionedUsers, item.id]);
-  };
-
-  const pickFile = async () => {
-    if (maxNumberOfFiles && numberOfUploads >= maxNumberOfFiles) {
-      return;
-    }
-
-    const result = await pickDocument({
-      maxNumberOfFiles: maxNumberOfFiles - numberOfUploads,
-    });
-    if (!result.cancelled && result.docs) {
-      result.docs.forEach((doc) => {
-        const mimeType = lookup(doc.name);
-
-        if (mimeType && mimeType?.startsWith('image/')) {
-          uploadNewImage(doc);
-        } else {
-          uploadNewFile(doc);
-        }
-      });
+  const closeAttachmentPicker = () => {
+    if (selectedPicker) {
+      setSelectedPicker(undefined);
+      closePicker();
     }
   };
 
-  const pickImage = async () => {
-    if (maxNumberOfFiles && numberOfUploads >= maxNumberOfFiles) {
-      return;
-    }
-
-    const result = await pickImageNative({
-      compressImageQuality,
-      maxNumberOfFiles: maxNumberOfFiles - numberOfUploads,
-    });
-
-    if (!result.cancelled && result.images) {
-      result.images.forEach((image) => {
-        uploadNewImage(image);
-      });
+  const toggleAttachmentPicker = () => {
+    if (selectedPicker) {
+      closeAttachmentPicker();
+    } else {
+      openAttachmentPicker();
     }
   };
 
-  const removeFile = (id: string) => {
-    if (fileUploads.some((file) => file.id === id)) {
-      setFileUploads((prevFileUploads) =>
-        prevFileUploads.filter((file) => file.id !== id),
-      );
-      setNumberOfUploads((prevNumberOfUploads) => prevNumberOfUploads - 1);
+  const openCommandsPicker = () => {
+    appendText('/');
+    if (inputBoxRef.current) {
+      inputBoxRef.current.focus();
     }
   };
 
-  const removeImage = (id: string) => {
-    if (imageUploads.some((image) => image.id === id)) {
-      setImageUploads((prevImageUploads) =>
-        prevImageUploads.filter((image) => image.id !== id),
-      );
-      setNumberOfUploads((prevNumberOfUploads) => prevNumberOfUploads - 1);
-    }
-  };
-
+<<<<<<< HEAD
   const handleOnPress = () => {
     if (
       (maxNumberOfFiles && numberOfUploads >= maxNumberOfFiles) ||
@@ -612,81 +588,76 @@ export const MessageInput = <
     } else if (hasFilePicker) {
       pickFile();
     }
+=======
+  const additionalTextInputContainerProps = {
+    editable: disabled ? false : undefined,
+    ...additionalTextInputProps,
+>>>>>>> 5a2d0e827dd4a4067058787b49b07c584f3e370c
   };
 
-  const renderInputContainer = () => {
-    const additionalTextInputContainerProps = {
-      editable: disabled ? false : undefined,
-      ...additionalTextInputProps,
-    };
-
-    const triggerSettings = channel
-      ? ACITriggerSettings<At, Ch, Co, Ev, Me, Re, Us>({
-          autocompleteSuggestionsLimit,
-          channel,
-          onMentionSelectItem: onSelectItem,
-          t,
-        })
-      : ({} as TriggerSettings<Co, Us>);
-
-    return (
-      <Container imageUploads={imageUploads}>
-        {fileUploads && (
-          <FileUploadPreview
-            AttachmentFileIcon={AttachmentFileIcon}
-            fileUploads={fileUploads}
-            removeFile={removeFile}
-            retryUpload={uploadFile}
-          />
+  return (
+    <>
+      <View
+        onLayout={({
+          nativeEvent: {
+            layout: { height: newHeight },
+          },
+        }) => setHeight(newHeight)}
+        style={[
+          styles.container,
+          { backgroundColor: white, borderColor: border },
+          container,
+        ]}
+      >
+        {(editing || quotedMessage) && (
+          <View style={[styles.editingBoxHeader, editingBoxHeader]}>
+            {editing ? (
+              <Edit pathFill={grey_gainsboro} />
+            ) : (
+              <CurveLineLeftUp pathFill={grey_gainsboro} />
+            )}
+            <Text
+              style={[
+                styles.editingBoxHeaderTitle,
+                { color: black },
+                editingBoxHeaderTitle,
+              ]}
+            >
+              {editing ? t('Editing Message') : t('Reply to Message')}
+            </Text>
+            <TouchableOpacity
+              disabled={disabled}
+              onPress={() => {
+                resetInput();
+                if (editing) {
+                  clearEditingState();
+                }
+                if (quotedMessage) {
+                  clearQuotedMessageState();
+                }
+                if (inputBoxRef.current) {
+                  inputBoxRef.current.blur();
+                }
+              }}
+              testID='close-button'
+            >
+              <CircleClose pathFill={grey} />
+            </TouchableOpacity>
+          </View>
         )}
-        {imageUploads && (
-          <ImageUploadPreview
-            imageUploads={imageUploads}
-            removeImage={removeImage}
-            retryUpload={uploadImage}
-          />
-        )}
-
-        {/**
-         * TODO: Use custom action sheet to show icon with titles of button. But it doesn't
-         * work well with async onPress operations. So find a solution.
-         */}
-        <ActionSheetAttachment
-          closeAttachActionSheet={closeAttachActionSheet}
-          pickFile={pickFile}
-          pickImage={pickImage}
-          setAttachActionSheetRef={setAttachActionSheetRef}
-          styles={actionSheetStyles}
-        />
-        <InputBoxContainer ref={setInputBoxContainerRef}>
+        <View style={[styles.composerContainer, composerContainer]}>
           {Input ? (
             <Input
-              _pickFile={pickFile}
-              _pickImage={pickImage}
-              _removeFile={removeFile}
-              _removeImage={removeImage}
-              _uploadFile={uploadFile}
-              _uploadImage={uploadImage}
               additionalTextInputProps={additionalTextInputContainerProps}
-              appendText={appendText}
-              closeAttachActionSheet={closeAttachActionSheet}
-              disabled={disabled}
+              closeAttachmentPicker={closeAttachmentPicker}
               getUsers={getUsers}
-              handleOnPress={handleOnPress}
-              isValidMessage={isValidMessage}
-              onChange={onChangeText}
-              onSelectItem={onSelectItem}
-              sendMessage={sendMessage}
-              setInputBoxContainerRef={setInputBoxContainerRef}
-              setInputBoxRef={setInputBoxRef}
-              triggerSettings={triggerSettings}
-              updateMessage={updateMessage}
-              uploadNewFile={uploadNewFile}
-              uploadNewImage={uploadNewImage}
-              value={text}
+              openAttachmentPicker={openAttachmentPicker}
+              openCommandsPicker={openCommandsPicker}
+              toggleAttachmentPicker={toggleAttachmentPicker}
             />
           ) : (
             <>
+<<<<<<< HEAD
               {(hasImagePicker || hasFilePicker) && (
                 <AttachButton
                   disabled={disabled}
@@ -699,21 +670,86 @@ export const MessageInput = <
                       pickFile();
                     }
                   }}
+=======
+              <View style={[styles.optionsContainer, optionsContainer]}>
+                {InputButtons && (
+                  <InputButtons
+                    closeAttachmentPicker={closeAttachmentPicker}
+                    openAttachmentPicker={openAttachmentPicker}
+                    openCommandsPicker={openCommandsPicker}
+                    toggleAttachmentPicker={toggleAttachmentPicker}
+                  />
+                )}
+              </View>
+              <View
+                style={[
+                  styles.inputBoxContainer,
+                  {
+                    borderColor: grey_whisper,
+                    paddingVertical: giphyActive ? 8 : 12,
+                  },
+                  inputBoxContainer,
+                ]}
+              >
+                {((typeof editing !== 'boolean' && editing?.quoted_message) ||
+                  quotedMessage) && (
+                  <View style={[styles.replyContainer, replyContainer]}>
+                    <Reply />
+                  </View>
+                )}
+                {fileUploads.length ? <FileUploadPreview /> : null}
+                {imageUploads.length ? <ImageUploadPreview /> : null}
+                <View
+                  style={[
+                    styles.autoCompleteInputContainer,
+                    {
+                      paddingLeft: giphyActive ? 8 : 16,
+                      paddingRight: giphyActive ? 10 : 16,
+                    },
+                    autoCompleteInputContainer,
+                  ]}
+                >
+                  {giphyActive && (
+                    <View
+                      style={[
+                        styles.giphyContainer,
+                        { backgroundColor: accent_blue },
+                        giphyContainer,
+                      ]}
+                    >
+                      <Lightning height={16} pathFill={white} width={16} />
+                      <Text
+                        style={[styles.giphyText, { color: white }, giphyText]}
+                      >
+                        GIPHY
+                      </Text>
+                    </View>
+                  )}
+                  <AutoCompleteInput<At, Ch, Co, Ev, Me, Re, Us>
+                    additionalTextInputProps={additionalTextInputProps}
+                  />
+                  {giphyActive && (
+                    <TouchableOpacity
+                      disabled={disabled}
+                      onPress={() => {
+                        setGiphyActive(false);
+                      }}
+                      testID='close-button'
+                    >
+                      <CircleClose height={20} pathFill={grey} width={20} />
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+              <View style={[styles.sendButtonContainer, sendButtonContainer]}>
+                <SendButton
+                  disabled={disabled || sending.current || !isValidMessage()}
+>>>>>>> 5a2d0e827dd4a4067058787b49b07c584f3e370c
                 />
-              )}
-              <AutoCompleteInput<Co, Us>
-                additionalTextInputProps={additionalTextInputProps || {}}
-                onChange={onChangeText}
-                setInputBoxRef={setInputBoxRef}
-                triggerSettings={triggerSettings}
-                value={text}
-              />
-              <SendButton<At, Ch, Co, Ev, Me, Re, Us>
-                disabled={disabled || sending.current || !isValidMessage()}
-                sendMessage={sendMessage}
-              />
+              </View>
             </>
           )}
+<<<<<<< HEAD
         </InputBoxContainer>
       </Container>
     );
@@ -893,187 +929,301 @@ export const MessageInput = <
         return fileUpload;
       }),
     );
-
-    let response = {} as SendFileAPIResponse;
-    try {
-      if (doDocUploadRequest) {
-        response = await doDocUploadRequest(file, channel);
-      } else if (channel && file.uri) {
-        response = await channel.sendFile(file.uri, file.name, file.type);
-      }
-    } catch (error) {
-      console.warn(error);
-      if (!newFile) {
-        setNumberOfUploads((prevNumberOfUploads) => prevNumberOfUploads - 1);
-      } else {
-        setFileUploads((prevFileUploads) =>
-          prevFileUploads.map((fileUpload) => {
-            if (fileUpload.id === id) {
-              return {
-                ...fileUpload,
-                state: FileState.UPLOAD_FAILED,
-              };
-            }
-            return fileUpload;
-          }),
-        );
-        setNumberOfUploads((prevNumberOfUploads) => prevNumberOfUploads - 1);
-      }
-      return;
-    }
-
-    setFileUploads((prevFileUploads) =>
-      prevFileUploads.map((fileUpload) => {
-        if (fileUpload.id === id) {
-          return {
-            ...fileUpload,
-            state: FileState.UPLOADED,
-            url: response.file,
-          };
-        }
-        return fileUpload;
-      }),
-    );
-  };
-
-  const uploadImage = async ({ newImage }: { newImage: ImageUpload }) => {
-    const { file, id } = newImage || {};
-    if (!file) {
-      return;
-    }
-
-    let response = {} as SendFileAPIResponse;
-
-    const filename = (file.name || file.uri || '').replace(
-      /^(file:\/\/|content:\/\/)/,
-      '',
-    );
-    const contentType = lookup(filename) || 'multipart/form-data';
-
-    try {
-      if (doImageUploadRequest) {
-        response = await doImageUploadRequest(file, channel);
-      } else if (file.uri && channel) {
-        if (sendImageAsync) {
-          channel.sendImage(file.uri, undefined, contentType).then((res) => {
-            if (asyncIds.includes(id)) {
-              // Evaluates to true if user hit send before image successfully uploaded
-              setAsyncUploads((prevAsyncUploads) => {
-                prevAsyncUploads[id] = {
-                  ...prevAsyncUploads[id],
-                  state: FileState.UPLOADED,
-                  url: res.file,
-                };
-                return prevAsyncUploads;
-              });
-            } else {
-              setImageUploads((prevImageUploads) =>
-                prevImageUploads.map((imageUpload) => {
-                  if (imageUpload.id === id) {
-                    return {
-                      ...imageUpload,
-                      state: FileState.UPLOADED,
-                      url: res.file,
-                    };
-                  }
-                  return imageUpload;
-                }),
-              );
-            }
-          });
-        } else {
-          response = await channel.sendImage(file.uri, undefined, contentType);
-        }
-      }
-
-      if (Object.keys(response).length) {
-        setImageUploads((prevImageUploads) =>
-          prevImageUploads.map((imageUpload) => {
-            if (imageUpload.id === id) {
-              return {
-                ...imageUpload,
-                state: FileState.UPLOADED,
-                url: response.file,
-              };
-            }
-            return imageUpload;
-          }),
-        );
-      }
-    } catch (error) {
-      console.warn(error);
-      if (newImage) {
-        setImageUploads((prevImageUploads) =>
-          prevImageUploads.map((imageUpload) => {
-            if (imageUpload.id === id) {
-              return {
-                ...imageUpload,
-                state: FileState.UPLOAD_FAILED,
-              };
-            }
-            return imageUpload;
-          }),
-        );
-      }
-      setNumberOfUploads((prevNumberOfUploads) => prevNumberOfUploads - 1);
-
-      return;
-    }
-  };
-
-  const uploadNewFile = async (file: {
-    name: string;
-    size?: number | string;
-    type?: string;
-    uri?: string;
-  }) => {
-    const id = generateRandomId();
-    const mimeType = lookup(file.name);
-    const newFile = {
-      file: { ...file, type: mimeType || file?.type },
-      id,
-      state: FileState.UPLOADING,
-    };
-    await Promise.all([
-      setFileUploads((prevFileUploads) => prevFileUploads.concat([newFile])),
-      setNumberOfUploads((prevNumberOfUploads) => prevNumberOfUploads + 1),
-    ]);
-
-    uploadFile({ newFile });
-  };
-
-  const uploadNewImage = async (image: { uri?: string }) => {
-    const id = generateRandomId();
-    const newImage = {
-      file: image,
-      id,
-      state: FileState.UPLOADING,
-    };
-    await Promise.all([
-      setImageUploads((prevImageUploads) =>
-        prevImageUploads.concat([newImage]),
-      ),
-      setNumberOfUploads((prevNumberOfUploads) => prevNumberOfUploads + 1),
-    ]);
-
-    uploadImage({ newImage });
-  };
-
-  return editing ? (
-    <EditingBoxContainer testID='editing'>
-      <EditingBoxHeader>
-        <EditingBoxHeaderTitle>{t('Editing Message')}</EditingBoxHeaderTitle>
-        <IconSquare
-          icon={iconClose}
-          onPress={() => {
-            resetInput();
-            clearEditingState();
-          }}
-        />
-      </EditingBoxHeader>
-      {renderInputContainer()}
-    </EditingBoxContainer>
-  ) : (
-    renderInputContainer()
+=======
+        </View>
+        <ShowThreadMessageInChannelButton threadList={threadList} />
+      </View>
+      {componentType && suggestions ? (
+        <View
+          style={[
+            styles.suggestionsListContainer,
+            { backgroundColor: white, bottom: height },
+            suggestionsListContainer,
+          ]}
+        >
+          <SuggestionsList<Co, Us>
+            active={!!suggestions}
+            componentType={componentType}
+            suggestions={suggestions}
+            suggestionsTitle={suggestionsTitle}
+          />
+        </View>
+      ) : null}
+      {selectedPicker && (
+        <View
+          style={[
+            {
+              backgroundColor: white_smoke,
+              height:
+                (attachmentPickerBottomSheetHeight
+                  ? attachmentPickerBottomSheetHeight +
+                    (attachmentSelectionBarHeight ?? 52)
+                  : 360) - (bottomInset ?? 0),
+            },
+            attachmentSelectionBar,
+          ]}
+        >
+          <AttachmentSelectionBar />
+        </View>
+      )}
+    </>
   );
 };
+>>>>>>> 5a2d0e827dd4a4067058787b49b07c584f3e370c
+
+const areEqual = <
+  At extends UnknownType = DefaultAttachmentType,
+  Ch extends UnknownType = DefaultChannelType,
+  Co extends string = DefaultCommandType,
+  Ev extends UnknownType = DefaultEventType,
+  Me extends UnknownType = DefaultMessageType,
+  Re extends UnknownType = DefaultReactionType,
+  Us extends UnknownType = DefaultUserType
+>(
+  prevProps: MessageInputPropsWithContext<At, Ch, Co, Ev, Me, Re, Us>,
+  nextProps: MessageInputPropsWithContext<At, Ch, Co, Ev, Me, Re, Us>,
+) => {
+  const {
+    asyncUploads: prevAsyncUploads,
+    disabled: prevDisabled,
+    editing: prevEditing,
+    fileUploads: prevFileUploads,
+    giphyActive: prevGiphyActive,
+    imageUploads: prevImageUploads,
+    isValidMessage: prevIsValidMessage,
+    quotedMessage: prevQuotedMessage,
+    sending: prevSending,
+    showMoreOptions: prevShowMoreOptions,
+    suggestions: prevSuggestions,
+    suggestionsTitle: prevSuggestionsTitle,
+    t: prevT,
+    threadList: prevThreadList,
+  } = prevProps;
+  const {
+    asyncUploads: nextAsyncUploads,
+    disabled: nextDisabled,
+    editing: nextEditing,
+    fileUploads: nextFileUploads,
+    giphyActive: nextGiphyActive,
+    imageUploads: nextImageUploads,
+    isValidMessage: nextIsValidMessage,
+    quotedMessage: nextQuotedMessage,
+    sending: nextSending,
+    showMoreOptions: nextShowMoreOptions,
+    suggestions: nextSuggestions,
+    suggestionsTitle: nextSuggestionsTitle,
+    t: nextT,
+    threadList: nextThreadList,
+  } = nextProps;
+
+  const tEqual = prevT === nextT;
+  if (!tEqual) return false;
+
+  const disabledEqual = prevDisabled === nextDisabled;
+  if (!disabledEqual) return false;
+
+  const editingEqual = !!prevEditing === !!nextEditing;
+  if (!editingEqual) return false;
+
+  const imageUploadsEqual = prevImageUploads.length === nextImageUploads.length;
+  if (!imageUploadsEqual) return false;
+
+  const giphyActiveEqual = prevGiphyActive === nextGiphyActive;
+  if (!giphyActiveEqual) return false;
+
+  const quotedMessageEqual =
+    !!prevQuotedMessage &&
+    !!nextQuotedMessage &&
+    typeof prevQuotedMessage !== 'boolean' &&
+    typeof nextQuotedMessage !== 'boolean'
+      ? prevQuotedMessage.id === nextQuotedMessage.id
+      : !!prevQuotedMessage === !!nextQuotedMessage;
+  if (!quotedMessageEqual) return false;
+
+  const sendingEqual = prevSending.current === nextSending.current;
+  if (!sendingEqual) return false;
+
+  const showMoreOptionsEqual = prevShowMoreOptions === nextShowMoreOptions;
+  if (!showMoreOptionsEqual) return false;
+
+  const isValidMessageEqual = prevIsValidMessage() === nextIsValidMessage();
+  if (!isValidMessageEqual) return false;
+
+  const asyncUploadsEqual = Object.keys(prevAsyncUploads).every(
+    (key) =>
+      prevAsyncUploads[key].state === nextAsyncUploads[key].state &&
+      prevAsyncUploads[key].url === nextAsyncUploads[key].url,
+  );
+  if (!asyncUploadsEqual) return false;
+
+  const fileUploadsEqual = prevFileUploads.length === nextFileUploads.length;
+  if (!fileUploadsEqual) return false;
+
+  const suggestionsEqual =
+    !!prevSuggestions?.data && !!nextSuggestions?.data
+      ? prevSuggestions.data.length === nextSuggestions.data.length &&
+        prevSuggestions.data.every(
+          ({ name }, index) => name === nextSuggestions.data[index].name,
+        )
+      : !!prevSuggestions === !!nextSuggestions;
+  if (!suggestionsEqual) return false;
+
+  const suggestionsTitleEqual = prevSuggestionsTitle === nextSuggestionsTitle;
+  if (!suggestionsTitleEqual) return false;
+
+  const threadListEqual = prevThreadList === nextThreadList;
+  if (!threadListEqual) return false;
+
+  return true;
+};
+
+const MemoizedMessageInput = React.memo(
+  MessageInputWithContext,
+  areEqual,
+) as typeof MessageInputWithContext;
+
+export type MessageInputProps<
+  At extends DefaultAttachmentType = DefaultAttachmentType,
+  Ch extends UnknownType = DefaultChannelType,
+  Co extends string = DefaultCommandType,
+  Ev extends UnknownType = DefaultEventType,
+  Me extends UnknownType = DefaultMessageType,
+  Re extends UnknownType = DefaultReactionType,
+  Us extends UnknownType = DefaultUserType
+> = Partial<MessageInputPropsWithContext<At, Ch, Co, Ev, Me, Re, Us>>;
+
+/**
+ * UI Component for message input
+ * It's a consumer of
+ * [Channel Context](https://getstream.github.io/stream-chat-react-native/v3/#channelcontext),
+ * [Chat Context](https://getstream.github.io/stream-chat-react-native/v3/#chatcontext),
+ * [MessageInput Context](https://getstream.github.io/stream-chat-react-native/v3/#messageinputcontext),
+ * [Suggestions Context](https://getstream.github.io/stream-chat-react-native/v3/#suggestionscontext), and
+ * [Translation Context](https://getstream.github.io/stream-chat-react-native/v3/#translationcontext)
+ */
+export const MessageInput = <
+  At extends DefaultAttachmentType = DefaultAttachmentType,
+  Ch extends UnknownType = DefaultChannelType,
+  Co extends string = DefaultCommandType,
+  Ev extends UnknownType = DefaultEventType,
+  Me extends UnknownType = DefaultMessageType,
+  Re extends UnknownType = DefaultReactionType,
+  Us extends UnknownType = DefaultUserType
+>(
+  props: MessageInputProps<At, Ch, Co, Ev, Me, Re, Us>,
+) => {
+  const { disabled = false, members, watchers } = useChannelContext<
+    At,
+    Ch,
+    Co,
+    Ev,
+    Me,
+    Re,
+    Us
+  >();
+
+  const {
+    additionalTextInputProps,
+    appendText,
+    asyncIds,
+    asyncUploads,
+    AttachButton,
+    clearEditingState,
+    clearQuotedMessageState,
+    CommandsButton,
+    editing,
+    FileUploadPreview,
+    fileUploads,
+    giphyActive,
+    hasCommands,
+    hasFilePicker,
+    hasImagePicker,
+    ImageUploadPreview,
+    imageUploads,
+    Input,
+    inputBoxRef,
+    InputButtons,
+    isValidMessage,
+    maxNumberOfFiles,
+    MoreOptionsButton,
+    numberOfUploads,
+    pickFile,
+    quotedMessage,
+    removeImage,
+    resetInput,
+    SendButton,
+    sending,
+    sendMessageAsync,
+    setGiphyActive,
+    setShowMoreOptions,
+    showMoreOptions,
+    ShowThreadMessageInChannelButton,
+    uploadNewImage,
+    uploadsEnabled,
+  } = useMessageInputContext<At, Ch, Co, Ev, Me, Re, Us>();
+
+  const { Reply } = useMessagesContext<At, Ch, Co, Ev, Me, Re, Us>();
+
+  const {
+    componentType,
+    suggestions,
+    suggestionsTitle,
+  } = useSuggestionsContext<Co, Us>();
+
+  const { t } = useTranslationContext();
+
+  return (
+    <MemoizedMessageInput
+      {...{
+        additionalTextInputProps,
+        appendText,
+        asyncIds,
+        asyncUploads,
+        AttachButton,
+        clearEditingState,
+        clearQuotedMessageState,
+        CommandsButton,
+        componentType,
+        disabled,
+        editing,
+        FileUploadPreview,
+        fileUploads,
+        giphyActive,
+        hasCommands,
+        hasFilePicker,
+        hasImagePicker,
+        ImageUploadPreview,
+        imageUploads,
+        Input,
+        inputBoxRef,
+        InputButtons,
+        isValidMessage,
+        maxNumberOfFiles,
+        members,
+        MoreOptionsButton,
+        numberOfUploads,
+        pickFile,
+        quotedMessage,
+        removeImage,
+        Reply,
+        resetInput,
+        SendButton,
+        sending,
+        sendMessageAsync,
+        setGiphyActive,
+        setShowMoreOptions,
+        showMoreOptions,
+        ShowThreadMessageInChannelButton,
+        suggestions,
+        suggestionsTitle,
+        t,
+        uploadNewImage,
+        uploadsEnabled,
+        watchers,
+      }}
+      {...props}
+    />
+  );
+};
+
+MessageInput.displayName = 'MessageInput{messageInput}';

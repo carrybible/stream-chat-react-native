@@ -1,6 +1,108 @@
 # Changelog
 
+## [3.1.0] (UNRELEASED)
 
+- **🛑 BREAKING**: Removed a prop `handleOnPress` on `Input` component.
+- Added support for new props on `Input` component, which can be used on Channel component as prop to replace undelying input component ([reference](https://github.com/GetStream/stream-chat-react-native/wiki/Cookbook-v3.0#how-to-change-the-layout-of-messageinput-component))
+    - closeAttachmentPicker (function)
+    - openAttachmentPicker (function)
+    - openCommandsPicker (function)
+    - toggleAttachmentPicker (function)
+
+- Added support for new prop on `Channel` component - `InputButtons`, to replace the extra buttons on the left on input box.
+
+## [3.0.0] (2021-02-23)
+
+Version 3.x is a major revamp of the SDK and comes with **many breaking changes**. The new implementation takes advantage of React Context along with many popular community libraries such as Reanimated V2 to deliver a superior chat experience. **Upgrading will require re-implementing** your integration but will yield performance and functional benefits. It is highly recommended you read the Cookbook and examine the SampleApp / TypeScriptMessaging apps before upgrading to understand what is required.
+
+### New features
+
+  - Modern UX around reaction picker functionality, similar to iMessage
+  - Inline replies
+  - "Also send to channel" option on Threads
+  - In app attachment picker
+  - Improved avatars for grouped channels.
+  - Rich image viewers with options to share the image outside the app, or view the image in gallery view.
+  - "Copy Message" action as part of message actions.
+
+### Improvements
+
+- In previous versions, we did a lot of prop drilling throughout component trees, which makes it quite hard for end user to decide exactly where to set a particular prop. We have tried to centralize component customization on following three higher order components:
+
+  - OverlayProvider
+  - ChannelList
+  - Channel
+
+  We have prepared a visual guide to help you with component customizations - [Guide](https://github.com/GetStream/stream-chat-react-native/wiki/Cookbook-v3.0#custom-components)
+
+- In v2.x.x, we decided to move away from class based components, towards functional components along with react hooks. React hooks are definitely a big addition to react eco-system, but when not careful it has potential to hammer the performance. We have handled all these issues as part of v3.0.0 using careful revamp around all the contexts and memoizations, which improves the app performance by a great margin.
+
+- We have decided to abondon styled-components, are decided to have our own implementation
+
+  - Removed dot notation for theming applications
+  - Removed css string notation for styles on theme
+  - Added displayName to components with bracket notation denoting the theme path e.g. `MessageStatus.displayName = 'MessageStatus{message{status}}';` indicates the theme path would be modified via `const customTheme: DeepPartial<Theme> = { message: { status: { ...customizations } } }`. Please check our [theme docs](https://github.com/GetStream/stream-chat-react-native/wiki/Cookbook-v3.0#theme) for more details.
+
+### Dependency changes:
+
+- Added peer dependencies for:
+  - BlurView using one of these
+    - Expo: [expo-blur](https://docs.expo.io/versions/latest/sdk/blur-view/#installation)
+    - React Native: [@react-native-community/blur](https://github.com/Kureev/react-native-blur#installation)
+  - Image Compression using one of these
+    - Expo: [expo-image-manipulator](https://docs.expo.io/versions/latest/sdk/imagemanipulator/#installation)
+    - React Native: [react-native-image-resizer](https://github.com/bamlab/react-native-image-resizer#setup)
+  - FileSystem using one of these
+    - Expo: [expo-file-system](https://docs.expo.io/versions/latest/sdk/filesystem/#installation)
+    - React Native: [react-native-fs](https://github.com/itinance/react-native-fs/)
+  - Share using one of these
+    - Expo [expo-sharing](https://docs.expo.io/versions/latest/sdk/sharing/#installation)
+    - React Native: [react-native-share](https://github.com/react-native-share/react-native-share#getting-started)
+  - Image Picking using one of these
+    - Expo [expo-media-library](https://docs.expo.io/versions/latest/sdk/media-library/#installation)
+    - React Native: [react-native-cameraroll](https://github.com/react-native-cameraroll/react-native-cameraroll#getting-started)
+  - [react-native-gesture-handler](https://docs.swmansion.com/react-native-gesture-handler/docs/#installation)
+  - [react-native-reanimated v2](https://docs.swmansion.com/react-native-reanimated/docs/installation)
+  - [react-native-svg](https://github.com/react-native-svg/react-native-svg#installation)
+
+- Removed peer dependencies for:
+  - [react-native-get-random-values](https://github.com/LinusU/react-native-get-random-values)
+
+- Removed seamless-immutable
+- Removed styled-components:
+
+Please find detailed docs about this release in our [wiki](https://github.com/GetStream/stream-chat-react-native/wiki#v300)
+
+
+### Note for Expo
+
+- As of this release, expo is on version 40 which uses a version of React Native with a bug in the Dimensions API that occurs upon reloading an app in the simulator. Version 3.x uses relative sizing widely and depends on this API so issues will be visible in Expo until they update the custom React Native version they ship.
+
+- [Android] As part of this release, we implemented a new feature - inline replies, similar to whatsapp. Bi-directional scrolling/pagination was necessary for this feature. To keep smooth scrolling experience, we implemented our [own solution](https://github.com/GetStream/flat-list-mvcp#maintainvisiblecontentposition-prop-support-for-android-react-native) for react-native. Although, Expo being close-source project, we can't do any such thing for Expo. So inline reply feature is not recommended to use in Expo, since you will not have a good scroll experience on Android, while scrolling down in message list.
+
+
+## [2.2.2] 2021-02-07
+
+Handling the case of standlone Channel component (without ChannelList) on top of fix in [v2.2.1](https://github.com/GetStream/stream-chat-react-native/releases/tag/v2.2.1) - [ba7d744](https://github.com/GetStream/stream-chat-react-native/commit/ba7d744dcdf76e16bcee29a9daa6f8879ef0ec79)
+
+## [2.2.1] 2021-02-03
+
+For push notifications, we usually recommend users to disconnect websocket when app goes to background and reconnect when app comes to foreground. But channel list UI doesn't update properly once the ws is re-connected. This issue has been fixed in this commit [8a35e50](https://github.com/GetStream/stream-chat-react-native/commit/8a35e505fadb059b0a3b48fdc33a3a72021bd158)
+
+## [2.2.0] 2021-02-02
+
+- Switched to `react-native-markdown-package` for markdown of message text [#505](https://github.com/GetStream/stream-chat-react-native/pull/505/files)
+
+## [2.1.4] 2021-01-29
+
+Fixed broken re-send message functionality, upon failure [b3c028f](https://github.com/GetStream/stream-chat-react-native/commit/b3c028f7bb91d00286717564764cb0fcf42b75b3)
+
+## [2.1.3] 2021-01-26
+
+- Fix markdown on message
+  - fixes [#498](https://github.com/GetStream/stream-chat-react-native/issues/498)
+  - commit [d4713aa](https://github.com/GetStream/stream-chat-react-native/commit/d4713aa32515df8c4726860508661645ade13598)
+- Fixes issue with un-necessary queryChannels api call, when filters are provided as inline object [9f4528b](https://github.com/GetStream/stream-chat-react-native/commit/9f4528b0035cbcc5898f5da88109e703413b2f4f)
 ## [2.1.2] 2021-01-09
 
 - Fixed infinite re-rendering issue on mentions suggestion box [5fd521a](https://github.com/GetStream/stream-chat-react-native/commit/5fd521a075170004fe551dd3ffbac111256274fe)

@@ -2,33 +2,35 @@
 
 exports[`MessageTextContainer should render message text container 1`] = `
 <View
-  groupStyle="undefinedBottom"
   style={
     Array [
       Object {
-        "alignSelf": "flex-end",
-        "backgroundColor": "#EBEBEB",
-        "borderBottomLeftRadius": 16,
-        "borderBottomRightRadius": 16,
-        "borderColor": "transparent",
-        "borderTopLeftRadius": 16,
-        "borderTopRightRadius": 16,
-        "borderWidth": 0,
         "marginTop": 2,
         "paddingHorizontal": 8,
         "paddingVertical": 5,
       },
+      Object {
+        "alignSelf": "flex-end",
+        "borderColor": "transparent",
+        "borderWidth": 0,
+      },
+      Object {
+        "backgroundColor": "#EBEBEB",
+        "borderBottomLeftRadius": 16,
+        "borderBottomRightRadius": 16,
+        "borderTopLeftRadius": 16,
+        "borderTopRightRadius": 16,
+      },
+      Object {},
     ]
   }
   testID="message-text-container"
-  type="regular"
 >
   <View
     style={
       Array [
         Object {
-          "minHeight": 1,
-          "minWidth": 1,
+          "alignSelf": "stretch",
         },
         undefined,
       ]
@@ -41,17 +43,16 @@ exports[`MessageTextContainer should render message text container 1`] = `
           "flexDirection": "row",
           "flexWrap": "wrap",
           "justifyContent": "flex-start",
+          "marginBottom": 0,
+          "marginTop": 0,
         }
       }
     >
       <Text
         style={
-          Array [
-            Object {
-              "color": "#222222",
-            },
-            undefined,
-          ]
+          Object {
+            "color": "#222222",
+          }
         }
       >
         Hello World

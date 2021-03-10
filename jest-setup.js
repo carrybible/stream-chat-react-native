@@ -16,6 +16,12 @@ console.error = (e) => {
 console.warn = () => {};
 
 registerNativeHandlers({
+  BlurView: () => null,
+  compressImage: () => null,
+  deleteFile: () => null,
+  FlatList: () => null,
+  getLocalAssetUri: () => null,
+  getPhotos: () => null,
   NetInfo: {
     addEventListener: () => {},
     fetch: () =>
@@ -24,5 +30,12 @@ registerNativeHandlers({
       }),
   },
   pickDocument: () => null,
-  pickImage: () => null,
+  saveFile: () => null,
+  shareImage: () => null,
+  takePhoto: () => null,
+  triggerHaptic: () => null,
 });
+
+jest.mock('react-native-reanimated', () =>
+  require('react-native-reanimated/mock'),
+);
